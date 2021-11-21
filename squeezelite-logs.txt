@@ -1,0 +1,37 @@
+process_strm:280 strm command s
+[18:05:07.152771] process_strm:349 strm s autostart: 0 transition period: 0 transition type: 2 codec: m
+[18:05:07.152779] sendSTAT:195 STAT: STMf
+[18:05:07.155522] sendSTAT:195 STAT: STMc
+[18:05:07.155629] process_strm:383 set fade mode: 2
+[18:05:07.155654] process:527 audg
+[18:05:07.155661] process_audg:439 audg gainL: 6400 gainR: 6400 adjust: 1
+[18:05:07.320352] sendRESP:226 RESP
+[18:05:07.336202] sendSTAT:195 STAT: STMl
+[18:05:07.340041] process:527 strm
+[18:05:07.340072] process_strm:280 strm command u
+[18:05:07.340080] process_strm:337 unpause at: 20964251 now: 20964055
+[18:05:07.340086] sendSTAT:195 STAT: STMr
+[18:05:07.420013] sendDSCO:214 DSCO: 0
+[18:05:08.054173] sendSTAT:195 STAT: STMs
+[18:05:08.054392] sendSTAT:195 STAT: STMt
+[18:05:08.054429] process:527 strm
+[18:05:08.054441] process_strm:280 strm command t
+[18:05:08.054451] sendSTAT:195 STAT: STMt
+[18:05:10.055846] sendSTAT:195 STAT: STMt
+[18:05:11.056979] sendSTAT:195 STAT: STMt
+[18:05:12.047411] process:527 strm
+[18:05:12.047447] process_strm:280 strm command t
+[18:05:12.047462] sendSTAT:195 STAT: STMt
+[18:05:13.048150] sendSTAT:195 STAT: STMt
+[18:05:14.049275] sendSTAT:195 STAT: STMt
+[18:05:15.050429] sendSTAT:195 STAT: STMt
+[18:05:15.054487] process:527 strm
+[18:05:15.054534] process_strm:280 strm command a
+[18:05:15.054546] process_strm:326 skip ahead interval: 12
+[18:05:16.041045] process:527 strm
+[18:05:16.041082] process_strm:280 strm command t
+[18:05:16.041095] sendSTAT:195 STAT: STMt
+[18:05:17.042196] sendSTAT:195 STAT: STMt
+[18:05:19.043903] sendSTAT:195 STAT: STMt
+[18:05:20.036245] process:527 strm
+[18:05:20.036283] process_strm:280 strm command t
