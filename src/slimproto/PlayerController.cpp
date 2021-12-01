@@ -30,8 +30,9 @@ using CppAppUtils::Logger;
 
 namespace slimprotolib {
 
-PlayerController::PlayerController(IPlayer *aPlayer) :
-		player(aPlayer)
+PlayerController::PlayerController(SqueezeClient::IEventInterface *evIFace, IPlayer *aPlayer) :
+		player(aPlayer),
+		squeezeClientEventInterface(evIFace)
 {
 	assert(aPlayer!=NULL);
 	memset(&this->lmsPlayerStatusData, 0, sizeof(IPlayer::PlayerStatusT));
@@ -107,13 +108,19 @@ void PlayerController::OnTrackEnded()
 
 void PlayerController::KickOff()
 {
+	uint8_t macAdress[6];
+	char uid[16];
+
     Logger::LogDebug("PlayerController::KickOff - Connecting to server.");
 
     //TODO: Implement auto connect / reconnect
     this->lmsConnection->Connect();
 
     Logger::LogDebug("PlayerController::KickOff - Sending helo command.");
-   	if (!this->commandFactory->SendHeloCmd())
+    this->squeezeClientEventInterface->OnMACAddressRequested(macAdress);
+    this->squeezeClientEventInterface->OnUIDRequested(uid);
+
+   	if (!this->commandFactory->SendHeloCmd(macAdress, uid))
    	   	Logger::LogError("Failed to send helo command to server.");
 }
 
@@ -222,14 +229,18 @@ void PlayerController::OnSrvRequestedFlush()
 
 void PlayerController::OnSrvRequestedPlayerName()
 {
-	//TODO: make the player name configurable
-	this->commandFactory->SendPlayerName("A test player");
+	char name[1024];
+	this->squeezeClientEventInterface->OnPlayerNameRequested(name);
+    Logger::LogDebug("OnSrvRequestedPlayerName - Server asked us to send our player name. Sending back '%s'.", name);
+	this->commandFactory->SendPlayerName(name);
 }
 
-void PlayerController::OnSrvProvidedNewPlayerName(const char *playerName)
+void PlayerController::OnSrvSetNewPlayerName(const char *playerName)
 {
     Logger::LogDebug("PlayerController::OnSrvProvidedNewPlayerName - Server send us a new player name: %s", playerName);
-    //TODO: Make someting useful out of it
+	// sending playername back to confirm reception
+    this->commandFactory->SendPlayerName(playerName);
+    this->squeezeClientEventInterface->OnServerSetsNewPlayerName(playerName);
 }
 
 void PlayerController::OnSrvRequestedAudioEnabledChange(bool spdiffEnabled,
@@ -237,15 +248,33 @@ void PlayerController::OnSrvRequestedAudioEnabledChange(bool spdiffEnabled,
 {
     Logger::LogDebug("PlayerController::OnSrvRequestedAudioEnabledChange - SPDIFF: %s, DAC: %s.",
     		spdiffEnabled ? "true":"false", dacEnabled ? "true":"false");
-    //TODO: Make someting useful out of it
+
+    this->squeezeClientEventInterface->OnPowerStateChanged(dacEnabled || spdiffEnabled);
 }
+
+void PlayerController::OnSrvRequestedDisableDACSetting()
+{
+	bool value=false;
+    Logger::LogDebug("PlayerController::OnSrvRequestedDisableDACSetting - Server asked us to send the status of the \'DisableDAC\' setting. Sending back '%d'.", value);
+	// No useful need to handle this setting. In fact, the server shouldn't even ask since the setting is not even displayed in settings page
+	// anyway. Just send '0' back to server
+	this->commandFactory->SendDisableDACSetting(value);
+}
+
+void PlayerController::OnSrvSetDisableDACSetting(bool value)
+{
+    Logger::LogDebug("PlayerController::OnSrvSetDisableDACSetting - Server updated \'DisableDAC\' setting. New value: %s.", value ? "true" : "false");
+	this->commandFactory->SendDisableDACSetting(value);
+}
+
 
 void PlayerController::OnSrvRequestedVolumeChange(unsigned int volL,
 		unsigned int volR, bool adjustLocally)
 {
     Logger::LogDebug("PlayerController::OnSrvRequestedVolumeChange - VolL: %d, VolR: %d, Apply locally: %s",
     		volL, volR, adjustLocally ? "true" : "false");
-    //TODO: Make someting useful out of it
+
+    this->squeezeClientEventInterface->OnVolumeChanged(volL, volR);
 }
 
 void PlayerController::OnSrvRequestedLoadStream(

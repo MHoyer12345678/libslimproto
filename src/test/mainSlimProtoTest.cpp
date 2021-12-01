@@ -17,6 +17,7 @@ int main (int argc, char **argv)
 
 	//TODO: Change sort of
 	Logger::SetLogLevel(Logger::DEBUG);
+	//Logger::SetLogLevel(Logger::INFO);
 
 	SlimProtoTest* slimProtoTestInstance=SlimProtoTest::Instance();
 	if (slimProtoTestInstance->Init(argc,argv))

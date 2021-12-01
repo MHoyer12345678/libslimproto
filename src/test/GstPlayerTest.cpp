@@ -20,7 +20,7 @@ GstPlayerTest::GstPlayerTest() :
 		returnCode(0)
 {
 	this->mainloop=g_main_loop_new(NULL,FALSE);
-	this->player=new GstPlayer();
+	this->player=new GstPlayer(GstPlayerDefaultConfig::Instance());
 }
 
 GstPlayerTest::~GstPlayerTest()

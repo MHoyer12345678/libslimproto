@@ -62,6 +62,8 @@ public:
 	class IPlayerEventListener
 	{
 	public:
+		virtual ~IPlayerEventListener() {};
+
 		/**
 		 * Called after LoadStream once the player is connected to the stream server and got a connection response from the server
 		 * @params responseStr the string containing the response from the server
@@ -77,14 +79,6 @@ public:
 		 * Called on an ended track.
 		 */
 		virtual void OnTrackEnded()=0;
-	};
-
-	class IPlayerBuilder
-	{
-	public:
-		virtual IPlayer *CreatePlayer()=0;
-
-		virtual void DestroyPlayer(IPlayer *)=0;
 	};
 
 protected:

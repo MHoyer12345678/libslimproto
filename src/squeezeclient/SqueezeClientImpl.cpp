@@ -9,50 +9,42 @@
 
 #include "player/GstPlayer.h"
 
+#include "assert.h"
+
 namespace slimprotolib {
 
-
-SqueezeClientImpl::SqueezeClientImpl(PlayerT internalPlayer) :
-		playerBuilder(NULL)
+SqueezeClientImpl::SqueezeClientImpl(IEventInterface *evIFace,
+			IPlayer *aPlayer, bool freePlayer) :
+		player(aPlayer),
+		freePlayerInstance(freePlayer)
 {
-	switch(internalPlayer)
-	{
-	case GST_PLAYER:
-	default:
-		this->player=new GstPlayer();
-	}
-
-	this->controller=new PlayerController(this->player);
-}
-
-SqueezeClientImpl::SqueezeClientImpl(IPlayer::IPlayerBuilder *aPlayerBuilder) :
-		playerBuilder(aPlayerBuilder)
-{
-	this->player=this->playerBuilder->CreatePlayer();
-	this->controller=new PlayerController(this->player);
+	this->controller=new PlayerController(evIFace, this->player);
 }
 
 SqueezeClientImpl::~SqueezeClientImpl()
 {
 	delete this->controller;
 
-	//external player -> destroy using builder
-	//internal player -> destroy using delete
-	if (this->playerBuilder!=NULL)
-		this->playerBuilder->DestroyPlayer(this->player);
-	else
+	if (this->freePlayerInstance)
 		delete this->player;
 }
 
-SqueezeClient* SqueezeClientImpl::NewWithGstPlayer()
+SqueezeClient *SqueezeClientImpl::NewWithGstPlayerCustomConfig(IEventInterface *evIFace,
+		IGstPlayerConfig *configuration)
 {
-	return new SqueezeClientImpl(GST_PLAYER);
+	IPlayer *player=new GstPlayer(configuration);
+	return new SqueezeClientImpl(evIFace, player, true);
 }
 
-SqueezeClient* SqueezeClientImpl::NewWithCustomPlayer(
-		IPlayer::IPlayerBuilder *playerBuilder)
+SqueezeClient *SqueezeClientImpl::NewWithGstPlayerDefaultConfig(IEventInterface *evIFace)
 {
-	return new SqueezeClientImpl(playerBuilder);
+	return SqueezeClientImpl::NewWithGstPlayerCustomConfig(evIFace,
+			GstPlayerDefaultConfig::Instance());
+}
+
+SqueezeClient *SqueezeClientImpl::NewWithCustomPlayer(IEventInterface *evIFace, IPlayer *player)
+{
+	return new SqueezeClientImpl(evIFace, player, false);
 }
 
 bool SqueezeClientImpl::Init()

@@ -10,11 +10,38 @@
 
 #include "IPlayer.h"
 
+#include "GstPlayerConfig.h"
+
 namespace slimprotolib {
 
 class SqueezeClient {
 
 public:
+	class IEventInterface
+	{
+	public:
+
+		virtual ~IEventInterface() {};
+
+		virtual void OnPlayerNameRequested(char name[1024])=0;
+
+		virtual void OnUIDRequested(char uid[16])=0;
+
+		virtual void OnMACAddressRequested(uint8_t  mac[6])=0;
+
+		virtual void OnServerSetsNewPlayerName(const char *newName)=0;
+
+		virtual void OnPowerStateChanged(bool value)=0;
+
+		virtual void OnVolumeChanged(unsigned int volL, unsigned int volR)=0;
+
+		/** missing
+		  * - Player attributes (gst / alsa / ???)
+		  * - configure ip & port
+		  * */
+	};
+
+
 	enum PowerSignalT
 	{
 		POWER_TOGGLE,
@@ -22,16 +49,16 @@ public:
 		POWER_ON
 	};
 
-protected:
-	SqueezeClient();
-
-	virtual ~SqueezeClient();
-
 public:
 
-	static SqueezeClient *NewWithGstPlayer();
+	virtual ~SqueezeClient() {};
 
-	static SqueezeClient *NewWithCustomPlayer(IPlayer::IPlayerBuilder *playerBuilder);
+	static SqueezeClient *NewWithGstPlayerCustomConfig(IEventInterface *evIFace,
+			IGstPlayerConfig *configuration);
+
+	static SqueezeClient *NewWithGstPlayerDefaultConfig(IEventInterface *evIFace);
+
+	static SqueezeClient *NewWithCustomPlayer(IEventInterface *evIFace, IPlayer *player);
 
 	static void Destroy(SqueezeClient *squeezeClient);
 

@@ -11,23 +11,21 @@
 
 namespace slimprotolib {
 
-SqueezeClient::SqueezeClient()
+SqueezeClient *SqueezeClient::NewWithGstPlayerCustomConfig(IEventInterface *evIFace,
+		IGstPlayerConfig *configuration)
 {
+	return SqueezeClientImpl::NewWithGstPlayerCustomConfig(evIFace, configuration);
 }
 
-SqueezeClient::~SqueezeClient()
+SqueezeClient *SqueezeClient::NewWithGstPlayerDefaultConfig(IEventInterface *evIFace)
 {
+	return SqueezeClientImpl::NewWithGstPlayerDefaultConfig(evIFace);
 }
 
-SqueezeClient* SqueezeClient::NewWithGstPlayer()
+SqueezeClient* SqueezeClient::NewWithCustomPlayer(IEventInterface *evIFace,
+		IPlayer *player)
 {
-	return SqueezeClientImpl::NewWithGstPlayer();
-}
-
-SqueezeClient* SqueezeClient::NewWithCustomPlayer(
-		IPlayer::IPlayerBuilder *playerBuilder)
-{
-	return SqueezeClientImpl::NewWithCustomPlayer(playerBuilder);
+	return SqueezeClientImpl::NewWithCustomPlayer(evIFace, player);
 }
 
 void SqueezeClient::Destroy(SqueezeClient *squeezeClient)

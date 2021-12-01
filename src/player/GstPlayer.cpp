@@ -24,10 +24,11 @@ using namespace CppAppUtils;
 namespace slimprotolib {
 
 
-GstPlayer::GstPlayer() :
+GstPlayer::GstPlayer(IGstPlayerConfig *config) :
 		busWatchId(0),
 		needPlaybackReadySignal(false),
-		clockCalibrationMS(0)
+		clockCalibrationMS(0),
+		configuration(config)
 {
 	memset(&this->pipelineElements, 0, sizeof(PipeLineElementsT));
 }
@@ -61,8 +62,10 @@ bool GstPlayer::Init()
 	 this->pipelineElements.soupHttpSource=this->CreateElement("souphttpsrc", "http_source");
 	 this->pipelineElements.decodeBin=this->CreateElement("decodebin", "decode_bin");
 	 this->pipelineElements.audioConvert=this->CreateElement("audioconvert", "audio_convert");
-	 this->pipelineElements.audioAutoSink=this->CreateElement("autoaudiosink", "audio_sink");
+	 this->pipelineElements.audioAutoSink=this->CreateElement(
+			 this->configuration->GetGstAudioSinkElementType(), "audio_sink");
 
+	 this->configuration->DoConfigureSinkElement(this->pipelineElements.audioAutoSink);
 
 	 if (this->pipelineElements.soupHttpSource==NULL || this->pipelineElements.decodeBin==NULL ||
 			 this->pipelineElements.audioConvert==NULL || this->pipelineElements.audioAutoSink==NULL)

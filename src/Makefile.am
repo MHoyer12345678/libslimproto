@@ -14,13 +14,15 @@ libsimproto_a_SOURCES = \
 	slimproto/CommandFactory.cpp		\
 	slimproto/CommandFactory.h			\
 	player/IPlayer.cpp					\
+	player/GstPlayerConfig.cpp			\
 	player/GstPlayer.cpp				\
 	player/GstPlayer.h					\
 	squeezeclient/SqueezeClientImpl.cpp	\
 	squeezeclient/SqueezeClientImpl.h	\
 	squeezeclient/SqueezeClient.cpp		\
 	include/SqueezeClient.h				\
-	include/IPlayer.h				
+	include/IPlayer.h					\
+	include/GstPlayerConfig.h				
 	
 
 libsimproto_a_CPPFLAGS  = \

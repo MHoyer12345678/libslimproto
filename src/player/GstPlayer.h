@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 #include "IPlayer.h"
+#include "GstPlayerConfig.h"
 
 namespace slimprotolib {
 
@@ -31,6 +32,8 @@ private:
 		GstElement *audioAutoSink;
 
 	} PipeLineElementsT;
+
+	IGstPlayerConfig *configuration;
 
 	PipeLineElementsT pipelineElements;
 
@@ -70,7 +73,7 @@ private:
 	void SetClockCalibration();
 
 public:
-	GstPlayer();
+	GstPlayer(IGstPlayerConfig *config);
 
 	~GstPlayer();
 

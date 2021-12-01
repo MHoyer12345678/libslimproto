@@ -15,10 +15,18 @@
 
 using CppAppUtils::Logger;
 
-uint8_t MAC_ADDRESS[6]={0x5C,0xE0, 0xC5, 0x49, 0x54, 0xAD};
+#define DEVICE_ID_SQUEEZE_PLAYER 	12 // 12 -> squeeze player
+#define DEVICE_REVISION				1 // need to check if newer revisions do make more sense
 
-#define AN_UID "Dies ist eine id"
 #define COUNTRY_CODE "DE"
+
+#define SETD_SETTING_ID_PLAYER_NAME			0
+#define SETD_SETTING_ID_DIGITAL_OUTPUT_ENC	1
+#define SETD_SETTING_ID_WORD_CLOCK_OUTPUT	2
+#define SETD_SETTING_ID_POWEROFF_DAC		3 // Transporter only
+#define SETD_SETTING_ID_DISABLE_DAC			4 // Squezebox2/3 only
+#define SETD_SETTING_ID_FX_LOOP_SRC			5 // Transporter only
+#define SETD_SETTING_ID_FX_LOOP_CLK			6 // Transporter only
 
 using namespace slimprotolib;
 #pragma pack(push, 1)
@@ -73,7 +81,7 @@ typedef struct StatCliCmdT {
 typedef struct SetdCliCmdT {
 	CliCmdBaseT cmdBase;
 	char id;
-	char name[];
+	char data[];
 } SetdCliCmdT;
 
 // server commands
@@ -102,7 +110,7 @@ typedef struct StrmSrvCmdT {
 typedef struct SetdSrvCmdT {
 	char  cmd[4];
 	uint8_t id;
-	char playerName[];
+	char data[];
 } SetdSrvCmdT;
 
 typedef struct AudeSrvCmdT {
@@ -169,10 +177,8 @@ bool CommandFactory::SendMessage(void *data, ssize_t dataSize)
 	return this->lmsConnection->SendCmd(data,dataSize);
 }
 
-bool slimprotolib::CommandFactory::SendHeloCmd()
+bool slimprotolib::CommandFactory::SendHeloCmd(uint8_t macAdress[6], char uid[16])
 {
-	//TODO: configure or read out MAC address
-	//TODO: configure or create UID
 	//TODO: Thing about wlanChannelList -> readout ??
 	//TODO: What's about dataBytesReceived?
 	//TODO: Thing about Countrycode -> readout ??
@@ -180,10 +186,10 @@ bool slimprotolib::CommandFactory::SendHeloCmd()
 
 	HeloCliCmdT cmd;
 	this->SetCmdBase(&cmd.cmdBase,"HELO", sizeof(HeloCliCmdT));
-	cmd.deviceId=12; // 12 -> squeeze player
-	cmd.revision=1;
-	memcpy(cmd.macAdress, MAC_ADDRESS, sizeof(cmd.macAdress));
-	memcpy(cmd.UID, AN_UID, sizeof(cmd.UID));
+	cmd.deviceId=DEVICE_ID_SQUEEZE_PLAYER;
+	cmd.revision=DEVICE_REVISION;
+	memcpy(cmd.macAdress, macAdress, sizeof(cmd.macAdress));
+	memcpy(cmd.UID, uid, sizeof(cmd.UID));
 	cmd.wlanChannelList=0x1FFF;
 	cmd.dataBytesReceivedH=0;
 	cmd.dataBytesReceivedL=0;
@@ -247,8 +253,23 @@ bool CommandFactory::SendPlayerName(const char *playerName)
 	cmd=(SetdCliCmdT *)alloca(cmdLen);
 
 	this->SetCmdBase(&(cmd->cmdBase),"SETD", cmdLen);
-	cmd->id=0;
-	strcpy(cmd->name,playerName);
+	cmd->id=SETD_SETTING_ID_PLAYER_NAME;
+	strcpy(cmd->data,playerName);
+
+	return this->SendMessage(cmd, cmdLen);
+}
+
+bool slimprotolib::CommandFactory::SendDisableDACSetting(bool value)
+{
+	SetdCliCmdT *cmd;
+	int cmdLen;
+
+	cmdLen=sizeof(SetdCliCmdT)+1;
+	cmd=(SetdCliCmdT *)alloca(cmdLen);
+
+	this->SetCmdBase(&(cmd->cmdBase),"SETD", cmdLen);
+	cmd->id=SETD_SETTING_ID_DISABLE_DAC;
+	*((&cmd->id)+1)=value ? '1' : '0';
 
 	return this->SendMessage(cmd, cmdLen);
 }
@@ -382,13 +403,7 @@ void CommandFactory::DoProcessReceivedCommand(void *data, uint16_t cmdSize)
 	else if (strncmp((char *)data, "setd",4)==0)
 	{
 		if (CommandFactory::CheckSizeMin("setd", cmdSize, sizeof(SetdSrvCmdT)))
-		{
-			//no data send -> player name requested; else new name send by lms
-			if (cmdSize==sizeof(SetdSrvCmdT))
-				this->cmdListener->OnSrvRequestedPlayerName();
-			else
-				this->cmdListener->OnSrvProvidedNewPlayerName(((SetdSrvCmdT *)data)->playerName);
-		}
+			this->DoProcessSetdCmd((SetdSrvCmdT *)data, cmdSize);
 	}
 	else if (strncmp((char *)data, "aude",4)==0)
 	{
@@ -404,6 +419,44 @@ void CommandFactory::DoProcessReceivedCommand(void *data, uint16_t cmdSize)
 	}
 	else
 		Logger::LogInfo("CommandFactory::DoProcessCommand - Received unknown command: %.4s, Size: %d", (char *)data, cmdSize);
+}
+
+void CommandFactory::DoProcessSetdCmd(SetdSrvCmdT *cmd, uint16_t cmdSize)
+{
+	Logger::LogDebug("CommandFactory::DoProcessSetdCmd - Setd command received. Id: %d, Size: %d",
+			cmd->id, cmdSize);
+
+	//no data send -> player name requested; else new name send by lms
+	if (cmdSize==sizeof(SetdSrvCmdT))
+	{
+		switch(cmd->id)
+		{
+		case SETD_SETTING_ID_PLAYER_NAME:
+			this->cmdListener->OnSrvRequestedPlayerName();
+			break;
+		case SETD_SETTING_ID_DISABLE_DAC:
+			this->cmdListener->OnSrvRequestedDisableDACSetting();
+			break;
+		default:
+			Logger::LogError("Received unexpected command id %d of setd command. Ignoring it.", cmd->id);
+			break;
+		}
+	}
+	else
+	{
+		switch(cmd->id)
+		{
+		case SETD_SETTING_ID_PLAYER_NAME:
+			this->cmdListener->OnSrvSetNewPlayerName(cmd->data);
+			break;
+		case SETD_SETTING_ID_DISABLE_DAC:
+			this->cmdListener->OnSrvSetDisableDACSetting(cmd->data[0]=='1');
+			break;
+		default:
+			Logger::LogError("Received unexpected command id %d of setd command. Ignoring it.", cmd->id);
+			break;
+		}
+	}
 }
 
 void CommandFactory::DoProcessStrmCommand(StrmSrvCmdT *cmd, uint16_t cmdSize)
@@ -472,6 +525,8 @@ void CommandFactory::DoProcessStrmSCmd(StrmSrvCmdT *cmd)
 	audioFMT.pcmSampleRate=(IPlayer::PCMSampleRateT)cmd->pcmSampleRate;
 	audioFMT.pcmChannelCount=(IPlayer::PCMChannelCountT)cmd->pcmChannels;
 	audioFMT.pcmEndian=(IPlayer::PCMEndianT)cmd->pcmEndianness;
+
+	autostart=cmd->autostart!='0';
 
 	this->cmdListener->OnSrvRequestedLoadStream(&srvInfo,&audioFMT,autostart);
 }

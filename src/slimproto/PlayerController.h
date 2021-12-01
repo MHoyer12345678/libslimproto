@@ -21,6 +21,10 @@ class PlayerController : public LMSConnection::IConnectionListener,
 {
 private:
 
+
+
+	SqueezeClient::IEventInterface *squeezeClientEventInterface;
+
 	IPlayer::PlayerStatusT lmsPlayerStatusData;
 
 	LMSConnection *lmsConnection;
@@ -64,14 +68,18 @@ public:
 
 	virtual void OnSrvRequestedPlayerName();
 
-	virtual void OnSrvProvidedNewPlayerName(const char *playerName);
+	virtual void OnSrvSetNewPlayerName(const char *playerName);
 
 	virtual void OnSrvRequestedAudioEnabledChange(bool spdiffEnabled, bool dacEnabled);
 
 	virtual void OnSrvRequestedVolumeChange(unsigned int volL, unsigned int volR, bool adjustLocally);
 
+	virtual void OnSrvRequestedDisableDACSetting();
+
+	virtual void OnSrvSetDisableDACSetting(bool value);
+
 public:
-	PlayerController(IPlayer *player);
+	PlayerController(SqueezeClient::IEventInterface *evIFace, IPlayer *player);
 
 	~PlayerController();
 

@@ -15,6 +15,7 @@
 
 typedef struct CliCmdBaseT CliCmdBaseT;
 typedef struct StrmSrvCmdT StrmSrvCmdT;
+typedef struct SetdSrvCmdT SetdSrvCmdT;
 
 
 namespace slimprotolib
@@ -26,6 +27,8 @@ public:
 	class IServerCmdListener
 	{
 	public:
+		virtual ~IServerCmdListener() {};
+
 		virtual void OnSrvRequestedLoadStream(IPlayer::StreamingServerInfoT *srvInfo,
 				IPlayer::AudioFormatT *audioFMT, bool autostart)=0;
 
@@ -43,7 +46,11 @@ public:
 
 		virtual void OnSrvRequestedPlayerName()=0;
 
-		virtual void OnSrvProvidedNewPlayerName(const char *playerName)=0;
+		virtual void OnSrvRequestedDisableDACSetting()=0;
+
+		virtual void OnSrvSetNewPlayerName(const char *playerName)=0;
+
+		virtual void OnSrvSetDisableDACSetting(bool value)=0;
 
 		virtual void OnSrvRequestedAudioEnabledChange(bool spdiffEnabled, bool dacEnabled)=0;
 
@@ -66,6 +73,9 @@ private:
 
 	static bool CheckSizeExact(const char *cmd, uint16_t sizeReceived, size_t sizeExpected);
 
+	void DoProcessSetdCmd(SetdSrvCmdT *cmd, uint16_t cmdSize);
+
+	//Process Strm commands
 	void DoProcessStrmCommand(StrmSrvCmdT *cmd, uint16_t cmdSize);
 
 	void DoProcessStrmSCmd(StrmSrvCmdT *cmd);
@@ -76,9 +86,11 @@ public:
 	~CommandFactory();
 
 public:
-	bool SendHeloCmd();
+	bool SendHeloCmd(uint8_t macAdress[6], char uid[16]);
 
 	bool SendPlayerName(const char *playerName);
+
+	bool SendDisableDACSetting(bool value);
 
 	bool SendSTMaCmd(const IPlayer::PlayerStatusT* playerStatus);
 

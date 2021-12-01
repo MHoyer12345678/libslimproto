@@ -1,8 +1,36 @@
-- fill attributes of STAT with meaningful values
-- fully test sync play use case (next / stop / pause / ...)
-- test other formats
+//Issues
+- elapsed time negative if no pipeline established, should be 0
+
+
+
+//Architecture
 - arch refactor
   * What is done in lib, what in test, how looks an application like, maybe reimpl squeezelite with lib, maybe start intergration into retroradio
+  * Error concept and connect error reporting to server
+
+//Connection concept
+- resolve ip address from name
+- Connection concept
+  * reconnect/autoreconnect
+- Auto server discovery
+- Take care for autostart and different start modi (more than one strms possible??)
+
+//Extended testing
+- fully test sync play use case (next / stop / pause / ...)
+- test other formats
+
+//Configuration
+- configuration or parametrization
+  * configure ip & port
+
+//compile configure option to exclude gst player
+  * add configure option
+  * ifdef out as pre configure option
+
+//check if header files are packaged correctly ...
+
+//generic open topics
+- fill attributes of STAT with meaningful values
 - helo command
   * capabilities
   * data_bytes_received: What is squeezelite doing with it? Anything useful with this?
@@ -12,21 +40,6 @@
 - Country code
   * option to read out?
   * or configure or set statically?
-- resolve ip address from name
-- configuration or parametrization
-  * MAC Address (or read out)
-  * UID
-  * Player attributes (gst / alsa / ???)
-  * configure ip & port
-  * playername
-- Make part of library interface
-  * name received from server
-  * audio enabled
-  * volume set
-- Take care for autostart and different start modi (more than one strms possible??)
-- Error concept and connect error reporting to server
-- Connection concept
-  * reconnect/autoreconnect
 - check in squeezelite what STATu does. When is it called
 	-> Signals Underrun ... Let's ignore first ...
  

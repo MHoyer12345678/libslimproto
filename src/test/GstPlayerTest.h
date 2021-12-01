@@ -11,6 +11,7 @@
 #include <glib.h>
 
 #include "GstPlayer.h"
+#include "GstPlayerConfig.h"
 
 namespace slimprotolib {
 

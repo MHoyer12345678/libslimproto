@@ -16,27 +16,23 @@ namespace slimprotolib {
 
 class SqueezeClientImpl : public SqueezeClient {
 private:
-	enum PlayerT
-	{
-		GST_PLAYER
-	};
-
 	IPlayer *player;
 
 	PlayerController *controller;
 
-	IPlayer::IPlayerBuilder *playerBuilder;
+	bool freePlayerInstance;
 
-	SqueezeClientImpl(PlayerT internalPlayer);
-
-	SqueezeClientImpl(IPlayer::IPlayerBuilder *aPlayerBuilder);
+	SqueezeClientImpl(IEventInterface *evIFace, IPlayer *aPlayer, bool freePlayer);
 
 	virtual ~SqueezeClientImpl();
 
 public:
-	static SqueezeClient *NewWithGstPlayer();
+	static SqueezeClient *NewWithGstPlayerCustomConfig(IEventInterface *evIFace,
+			IGstPlayerConfig *configuration);
 
-	static SqueezeClient *NewWithCustomPlayer(IPlayer::IPlayerBuilder *playerBuilder);
+	static SqueezeClient *NewWithGstPlayerDefaultConfig(IEventInterface *evIFace);
+
+	static SqueezeClient *NewWithCustomPlayer(IEventInterface *evIFace, IPlayer *player);
 
 	static void Destroy(SqueezeClientImpl *client);
 

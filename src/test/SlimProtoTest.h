@@ -12,10 +12,13 @@
 
 #include "SqueezeClient.h"
 
+#include "GstPlayerConfig.h"
+
 namespace slimprotolib {
 
-class SlimProtoTest {
+class SlimProtoTest : public SqueezeClient::IEventInterface, GstPlayerAlsaSinkConfig {
 private:
+
 	GIOChannel *keyEvents;
 
 	static SlimProtoTest* instance;
@@ -48,6 +51,19 @@ public:
 
 	int GetReturnCode();
 
+	void OnPlayerNameRequested(char name[1024]);
+
+	void OnUIDRequested(char uid[16]);
+
+	void OnMACAddressRequested(uint8_t mac[6]);
+
+	void OnServerSetsNewPlayerName(const char *newName);
+
+	void OnPowerStateChanged(bool value);
+
+	void OnVolumeChanged(unsigned int volL, unsigned int volR);
+
+	const char *GetDevice();
 };
 
 } /* namespace slimprotolib */
