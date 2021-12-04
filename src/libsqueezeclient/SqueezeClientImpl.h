@@ -10,7 +10,7 @@
 
 #include "SqueezeClient.h"
 
-#include "slimproto/PlayerController.h"
+#include "PlayerController.h"
 
 namespace slimprotolib {
 

@@ -5,13 +5,13 @@
  *      Author: joe
  */
 
-#include "slimproto/CommandFactory.h"
+#include "CommandFactory.h"
 
 #include <string.h>
 #include <netinet/in.h>
 #include <cpp-app-utils/Logger.h>
 
-#include "slimproto/Utils.h"
+#include "Utils.h"
 
 using CppAppUtils::Logger;
 

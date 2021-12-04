@@ -1,12 +1,16 @@
 //Issues
 - elapsed time negative if no pipeline established, should be 0
 
-
+ 
 
 //Architecture
 - arch refactor
   * What is done in lib, what in test, how looks an application like, maybe reimpl squeezelite with lib, maybe start intergration into retroradio
   * Error concept and connect error reporting to server
+
+//packageing
+- make a shared lib from currently static one
+- create debianization
 
 //Connection concept
 - resolve ip address from name

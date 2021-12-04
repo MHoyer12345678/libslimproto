@@ -5,7 +5,7 @@
  *      Author: joe
  */
 
-#include "../slimproto/LMSConnection.h"
+#include "LMSConnection.h"
 
 #include <sys/socket.h>
 #include <unistd.h>
@@ -18,7 +18,7 @@
 
 #include <cpp-app-utils/Logger.h>
 
-#include "../slimproto/CommandFactory.h"
+#include "CommandFactory.h"
 
 #define MAX_CMD_SIZE 8096
 

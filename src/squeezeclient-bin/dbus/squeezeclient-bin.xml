@@ -1,0 +1,31 @@
+<node>
+  <interface name="SqueezeClientBin">
+
+    <method name="RequestPlay"/>
+
+    <method name="RequestPauseResume">
+	    <arg name="which" type="y" direction="in"/>
+    </method>
+
+    <method name="RequestStop"/>
+
+    <method name="RequestNext"/>
+    
+    <method name="RequestPrev"/>
+
+    <method name="RequestPowerStateChange">
+		<arg name="state" direction="in" type="y"/>	
+    </method>
+    
+    <method name="RequestVolUp"/>
+    
+    <method name="RequestVolDown"/>
+
+	<property name="Volume" type="u" access="read"/>
+
+	<property name="PowerState" type="b" access="read"/>
+    
+	<property name="PlayerState" type="y" access="read"/>
+    
+  </interface>
+</node>

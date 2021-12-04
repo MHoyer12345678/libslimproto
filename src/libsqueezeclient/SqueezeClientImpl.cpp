@@ -5,7 +5,7 @@
  *      Author: joe
  */
 
-#include "squeezeclient/SqueezeClientImpl.h"
+#include "SqueezeClientImpl.h"
 
 #include "player/GstPlayer.h"
 

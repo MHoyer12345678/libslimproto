@@ -5,7 +5,7 @@
  *      Author: joe
  */
 
-#include "slimproto/PlayerController.h"
+#include "PlayerController.h"
 
 #include <netinet/in.h>
 #include <assert.h>
@@ -13,7 +13,7 @@
 #include "cpp-app-utils/Logger.h"
 #include "CommandFactory.h"
 
-#include "slimproto/Utils.h"
+#include "Utils.h"
 
 #define IR_CMD_ON		0x76898f70
 #define IR_CMD_OFF		0x76898778

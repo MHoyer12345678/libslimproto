@@ -1,31 +1,31 @@
 ACLOCAL_AMFLAGS=-I m4
 
-bin_PROGRAMS=test-slimproto test-gstplayer
+bin_PROGRAMS=test-libsqueezeclient test-gstplayer squeezeclient
 
-noinst_LIBRARIES = libsimproto.a
+noinst_LIBRARIES = libsqueezeclient.a
 
-libsimproto_a_SOURCES = \
-	slimproto/Utils.cpp					\
-	slimproto/Utils.h					\
-	slimproto/PlayerController.cpp		\
-	slimproto/PlayerController.h		\
-	slimproto/LMSConnection.cpp			\
-	slimproto/LMSConnection.h			\
-	slimproto/CommandFactory.cpp		\
-	slimproto/CommandFactory.h			\
-	player/IPlayer.cpp					\
-	player/GstPlayerConfig.cpp			\
-	player/GstPlayer.cpp				\
-	player/GstPlayer.h					\
-	squeezeclient/SqueezeClientImpl.cpp	\
-	squeezeclient/SqueezeClientImpl.h	\
-	squeezeclient/SqueezeClient.cpp		\
-	include/SqueezeClient.h				\
-	include/IPlayer.h					\
-	include/GstPlayerConfig.h				
+libsqueezeclient_a_SOURCES = \
+	libsqueezeclient/Utils.cpp				\
+	libsqueezeclient/Utils.h				\
+	libsqueezeclient/PlayerController.cpp	\
+	libsqueezeclient/PlayerController.h		\
+	libsqueezeclient/LMSConnection.cpp		\
+	libsqueezeclient/LMSConnection.h		\
+	libsqueezeclient/CommandFactory.cpp		\
+	libsqueezeclient/CommandFactory.h		\
+	libsqueezeclient/SqueezeClientImpl.cpp	\
+	libsqueezeclient/SqueezeClientImpl.h	\
+	libsqueezeclient/SqueezeClient.cpp		\
+	include/SqueezeClient.h					\
+	player/IPlayer.cpp						\
+	player/GstPlayerConfig.cpp				\
+	player/GstPlayer.cpp					\
+	player/GstPlayer.h						\
+	include/IPlayer.h						\
+	include/GstPlayerConfig.h
 	
 
-libsimproto_a_CPPFLAGS  = \
+libsqueezeclient_a_CPPFLAGS  = \
 		-fPIC					\
 		-Ilib					\
 		-Iinclude				\
@@ -38,13 +38,29 @@ libsimproto_a_CPPFLAGS  = \
 	   	$(LIBSOUP_CFLAGS)		\
 		$(GSTREAMER_CFLAGS)
 		
+squeezeclient_SOURCES = \
+	squeezeclient-bin/mainSqueezeClientBin.cpp		\
+	squeezeclient-bin/SqueezeClientBin.cpp			\
+	squeezeclient-bin/SqueezeClientBin.h
 
-test_slimproto_SOURCES =		\
+
+# List generated headers here to assert that they are available when built is started
+BUILT_SOURCES =  squeezeclient-bin/generated/SqueezeClientInteface.h
+
+# Delete all generated files on 'make clean'
+CLEANFILES    =  squeezeclient-bin/generated/SqueezeClientInteface.c  \
+                 squeezeclient-bin/generated/SqueezeClientInteface.h
+
+# Targets to create generated sources during the build
+squeezeclient-bin/generated/SqueezeClientInteface.c squeezeclient-bin/generated/SqueezeClientInteface.h: squeezeclient-bin/dbus/squeezeclient-bin.xml
+	gdbus-codegen --interface-prefix=SqueezeClientBin. --c-namespace=SqueezeClient --generate-c-code=squeezeclient-bin/generated/SqueezeClientInteface squeezeclient-bin/dbus/squeezeclient-bin.xml
+
+test_libsqueezeclient_SOURCES =		\
 	test/mainSlimProtoTest.cpp	\
 	test/SlimProtoTest.cpp		\
 	test/SlimProtoTest.h
 		
-test_slimproto_CPPFLAGS = \
+test_libsqueezeclient_CPPFLAGS = \
 		-Iinclude				\
 		$(GIO_LIBS_CFLAGS)		\
 		$(GIO_UNIX_CFLAGS)		\
@@ -53,8 +69,8 @@ test_slimproto_CPPFLAGS = \
 	   	$(GOBJECT_CFLAGS)		\
 	   	$(LIBSOUP_CFLAGS)
 
-test_slimproto_LDADD	  = \
-		libsimproto.a			\
+test_libsqueezeclient_LDADD	  = \
+		libsqueezeclient.a		\
 		-lCppAppUtils			\
 		$(GIO_LIBS_LIBS)		\
 		$(GIO_UNIX_LIBS)		\
@@ -80,7 +96,7 @@ test_gstplayer_CPPFLAGS = \
 	   	$(LIBSOUP_CFLAGS)
 
 test_gstplayer_LDADD	  = \
-		libsimproto.a			\
+		libsqueezeclient.a		\
 		-lCppAppUtils			\
 		$(GIO_LIBS_LIBS)		\
 		$(GIO_UNIX_LIBS)		\

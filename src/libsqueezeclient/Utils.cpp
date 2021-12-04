@@ -5,7 +5,7 @@
  *      Author: joe
  */
 
-#include "../slimproto/Utils.h"
+#include "Utils.h"
 
 #include <time.h>
 
