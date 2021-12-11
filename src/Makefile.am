@@ -43,6 +43,24 @@ squeezeclient_SOURCES = \
 	squeezeclient-bin/SqueezeClientBin.cpp			\
 	squeezeclient-bin/SqueezeClientBin.h
 
+squeezeclient_CPPFLAGS = \
+		-Iinclude				\
+		$(GIO_LIBS_CFLAGS)		\
+		$(GIO_UNIX_CFLAGS)		\
+	   	$(GLIB_CFLAG)			\
+		$(GSTREAMER_CFLAGS)		\
+	   	$(GOBJECT_CFLAGS)		\
+	   	$(LIBSOUP_CFLAGS)
+
+squeezeclient_LDADD	  = \
+		libsqueezeclient.a		\
+		-lCppAppUtils			\
+		$(GIO_LIBS_LIBS)		\
+		$(GIO_UNIX_LIBS)		\
+		$(GLIB_LIBS)			\
+		$(GSTREAMER_LIBS)		\
+		$(GOBJECT_LIBS)			\
+		$(LIBSOUP_LIBS)
 
 # List generated headers here to assert that they are available when built is started
 BUILT_SOURCES =  squeezeclient-bin/generated/SqueezeClientInteface.h

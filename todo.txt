@@ -1,3 +1,12 @@
+
+change namespace
+
+
+//squeezeclientbin
+- connect dbus interface
+- parse command line
+- config file support
+
 //Issues
 - elapsed time negative if no pipeline established, should be 0
 
