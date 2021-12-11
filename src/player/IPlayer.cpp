@@ -9,7 +9,7 @@
 
 #include <stdlib.h>
 
-namespace slimprotolib {
+using namespace squeezeclient;
 
 IPlayer::IPlayer() :
 		playerEventListener(NULL)
@@ -24,5 +24,3 @@ void IPlayer::SetPlayerEventListener(IPlayerEventListener *listener)
 {
 	this->playerEventListener=listener;
 }
-
-} /* namespace slimprotolib */

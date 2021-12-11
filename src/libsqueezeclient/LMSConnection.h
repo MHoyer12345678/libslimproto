@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <arpa/inet.h>
 
-namespace slimprotolib
+namespace squeezeclient
 {
 
 class LMSConnection
@@ -63,6 +63,6 @@ public:
 	in_addr_t GetServerIp();
 };
 
-} /* namespace slimprotolib */
+} /* namespace squeezeclient */
 
 #endif /* SRC_SLIMPROTO_LMSCONNECTION_H_ */

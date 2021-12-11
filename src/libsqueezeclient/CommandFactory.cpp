@@ -28,7 +28,7 @@ using CppAppUtils::Logger;
 #define SETD_SETTING_ID_FX_LOOP_SRC			5 // Transporter only
 #define SETD_SETTING_ID_FX_LOOP_CLK			6 // Transporter only
 
-using namespace slimprotolib;
+using namespace squeezeclient;
 #pragma pack(push, 1)
 
 // client commands
@@ -177,7 +177,7 @@ bool CommandFactory::SendMessage(void *data, ssize_t dataSize)
 	return this->lmsConnection->SendCmd(data,dataSize);
 }
 
-bool slimprotolib::CommandFactory::SendHeloCmd(uint8_t macAdress[6], char uid[16])
+bool CommandFactory::SendHeloCmd(uint8_t macAdress[6], char uid[16])
 {
 	//TODO: Thing about wlanChannelList -> readout ??
 	//TODO: What's about dataBytesReceived?
@@ -259,7 +259,7 @@ bool CommandFactory::SendPlayerName(const char *playerName)
 	return this->SendMessage(cmd, cmdLen);
 }
 
-bool slimprotolib::CommandFactory::SendDisableDACSetting(bool value)
+bool CommandFactory::SendDisableDACSetting(bool value)
 {
 	SetdCliCmdT *cmd;
 	int cmdLen;
@@ -274,7 +274,7 @@ bool slimprotolib::CommandFactory::SendDisableDACSetting(bool value)
 	return this->SendMessage(cmd, cmdLen);
 }
 
-bool slimprotolib::CommandFactory::SendConnectResponse(const char *responseStr)
+bool CommandFactory::SendConnectResponse(const char *responseStr)
 {
 	RespCliCmdT *cmd;
 	int cmdLen;

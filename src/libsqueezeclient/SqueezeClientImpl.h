@@ -12,7 +12,7 @@
 
 #include "PlayerController.h"
 
-namespace slimprotolib {
+namespace squeezeclient {
 
 class SqueezeClientImpl : public SqueezeClient {
 private:
@@ -57,6 +57,6 @@ public:
 	virtual void SignalFakeSlower();
 };
 
-} /* namespace slimprotolib */
+} /* namespace squeezeclient */
 
 #endif /* SRC_SQUEEZECLIENT_SQUEEZECLIENTIMPL_H_ */

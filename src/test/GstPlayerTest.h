@@ -13,7 +13,7 @@
 #include "GstPlayer.h"
 #include "GstPlayerConfig.h"
 
-namespace slimprotolib {
+namespace squeezeclient {
 
 class GstPlayerTest {
 private:
@@ -46,6 +46,6 @@ public:
 
 };
 
-} /* namespace slimprotolib */
+} /* namespace squeezeclient */
 
 #endif /* SRC_TEST_GSTPLAYERTEST_H_ */

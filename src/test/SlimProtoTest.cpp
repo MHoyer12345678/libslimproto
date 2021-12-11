@@ -14,7 +14,7 @@
 
 using namespace CppAppUtils;
 
-namespace slimprotolib {
+using namespace squeezeclient;
 
 SlimProtoTest* SlimProtoTest::instance=NULL;
 
@@ -187,6 +187,4 @@ const char* SlimProtoTest::GetDevice()
 {
 	return "pulse";
 }
-
-} /* namespace slimprotolib */
 

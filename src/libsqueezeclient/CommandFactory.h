@@ -18,7 +18,7 @@ typedef struct StrmSrvCmdT StrmSrvCmdT;
 typedef struct SetdSrvCmdT SetdSrvCmdT;
 
 
-namespace slimprotolib
+namespace squeezeclient
 {
 
 class CommandFactory
@@ -130,6 +130,6 @@ public:
 
 };
 
-} /* namespace slimprotolib */
+} /* namespace squeezeclient */
 
 #endif /* SRC_COMMANDFACTORY_H_ */

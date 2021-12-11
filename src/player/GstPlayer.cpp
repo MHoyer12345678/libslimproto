@@ -21,7 +21,7 @@
 using std::stringstream;
 using namespace CppAppUtils;
 
-namespace slimprotolib {
+using namespace squeezeclient;
 
 
 GstPlayer::GstPlayer(IGstPlayerConfig *config) :
@@ -541,5 +541,3 @@ bool GstPlayer::ExtractHttpRequestItems(char *requestLine, const char **methodSt
 
 	return result;
 }
-
-} /* namespace slimprotolib */

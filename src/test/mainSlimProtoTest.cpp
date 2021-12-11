@@ -8,7 +8,7 @@
 #include "cpp-app-utils/Logger.h"
 #include "test/SlimProtoTest.h"
 
-using namespace slimprotolib;
+using namespace squeezeclient;
 using namespace CppAppUtils;
 
 int main (int argc, char **argv)

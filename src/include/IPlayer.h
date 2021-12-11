@@ -11,7 +11,7 @@
 #include <netinet/in.h>
 
 
-namespace slimprotolib {
+namespace squeezeclient {
 
 class IPlayer
 {
@@ -109,6 +109,6 @@ public:
 
 };
 
-} /* namespace slimprotolib */
+} /* namespace squeezeclient */
 
 #endif /* SRC_IPLAYER_H_ */

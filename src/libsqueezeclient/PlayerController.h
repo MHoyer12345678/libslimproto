@@ -14,7 +14,7 @@
 #include "IPlayer.h"
 
 
-namespace slimprotolib {
+namespace squeezeclient {
 
 class PlayerController : public LMSConnection::IConnectionListener,
 	public CommandFactory::IServerCmdListener, public IPlayer::IPlayerEventListener
@@ -106,6 +106,6 @@ public:
 	void SignalFakeSlower();
 };
 
-} /* namespace slimprotolib */
+} /* namespace squeezeclient */
 
 #endif /* SRC_PLAYERCONTROLLER_H_ */

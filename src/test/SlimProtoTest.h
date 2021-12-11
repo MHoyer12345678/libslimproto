@@ -14,7 +14,7 @@
 
 #include "GstPlayerConfig.h"
 
-namespace slimprotolib {
+namespace squeezeclient {
 
 class SlimProtoTest : public SqueezeClient::IEventInterface, GstPlayerAlsaSinkConfig {
 private:
@@ -66,6 +66,6 @@ public:
 	const char *GetDevice();
 };
 
-} /* namespace slimprotolib */
+} /* namespace squeezeclient */
 
 #endif /* SRC_TEST_SLIMPROTOTEST_H_ */

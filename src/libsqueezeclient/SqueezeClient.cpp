@@ -9,7 +9,7 @@
 
 #include "SqueezeClientImpl.h"
 
-namespace slimprotolib {
+using namespace squeezeclient;
 
 SqueezeClient *SqueezeClient::NewWithGstPlayerCustomConfig(IEventInterface *evIFace,
 		IGstPlayerConfig *configuration)
@@ -32,5 +32,3 @@ void SqueezeClient::Destroy(SqueezeClient *squeezeClient)
 {
 	SqueezeClientImpl::Destroy((SqueezeClientImpl *)squeezeClient);
 }
-
-} /* slimprotolib */

@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-namespace slimprotolib {
+namespace squeezeclient {
 
 class Utils {
 private:

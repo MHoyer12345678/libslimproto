@@ -24,6 +24,8 @@
 
 using CppAppUtils::Logger;
 
+namespace squeezeclient {
+
 #pragma pack(push, 1)
 
 typedef struct SrvCmdBaseT
@@ -33,9 +35,6 @@ typedef struct SrvCmdBaseT
 } SrvCmdBaseT;
 
 #pragma pack(pop)
-
-using namespace slimprotolib;
-
 
 
 LMSConnection::LMSConnection(IConnectionListener *listener) :
@@ -255,3 +254,5 @@ in_addr_t LMSConnection::GetServerIp()
 {
 	return this->serverIp;
 }
+
+} /* namespace squeezeclient */

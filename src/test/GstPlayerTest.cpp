@@ -12,7 +12,7 @@
 
 using namespace CppAppUtils;
 
-namespace slimprotolib {
+using namespace squeezeclient;
 
 GstPlayerTest* GstPlayerTest::instance=NULL;
 
@@ -93,4 +93,3 @@ int GstPlayerTest::GetReturnCode()
 	return this->returnCode;
 }
 
-} /* namespace slimprotolib */

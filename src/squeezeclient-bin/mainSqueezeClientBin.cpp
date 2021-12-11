@@ -3,7 +3,7 @@
 #include <cpp-app-utils/Logger.h>
 
 using namespace CppAppUtils;
-using namespace slimprotolib;
+using namespace squeezeclient;
 
 int main(int argc, char* argv[])
 {

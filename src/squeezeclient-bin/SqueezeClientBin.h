@@ -13,7 +13,7 @@
 #include "SqueezeClient.h"
 #include "GstPlayerConfig.h"
 
-namespace slimprotolib {
+namespace squeezeclient {
 
 class SqueezeClientBin : public SqueezeClient::IEventInterface, GstPlayerAlsaSinkConfig {
 private:

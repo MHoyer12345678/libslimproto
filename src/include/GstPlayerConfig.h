@@ -10,6 +10,8 @@
 
 #include <gst/gst.h>
 
+namespace squeezeclient {
+
 class IGstPlayerConfig
 {
 public:
@@ -51,5 +53,6 @@ public:
 	virtual const char *GetDevice()=0;
 };
 
+}; /* namespace squeezeclient */
 
 #endif /* SRC_INCLUDE_GSTPLAYERCONFIG_H_ */

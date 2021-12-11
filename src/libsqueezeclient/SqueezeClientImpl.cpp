@@ -11,7 +11,7 @@
 
 #include "assert.h"
 
-namespace slimprotolib {
+using namespace squeezeclient;
 
 SqueezeClientImpl::SqueezeClientImpl(IEventInterface *evIFace,
 			IPlayer *aPlayer, bool freePlayer) :
@@ -108,5 +108,3 @@ void SqueezeClientImpl::SignalFakeSlower()
 {
 	this->controller->SignalFakeSlower();
 }
-
-} /* namespace retroradio_controller */

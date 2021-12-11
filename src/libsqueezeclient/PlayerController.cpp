@@ -27,8 +27,7 @@
 #define IR_CMD_PAUSE	0x7689c03f
 
 using CppAppUtils::Logger;
-
-namespace slimprotolib {
+using namespace squeezeclient;
 
 PlayerController::PlayerController(SqueezeClient::IEventInterface *evIFace, IPlayer *aPlayer) :
 		player(aPlayer),
@@ -312,5 +311,3 @@ void PlayerController::SignalFakeSlower()
 	g_usleep(50*1000);
     this->player->Resume();
 }
-
-} /* namespace slimprotolib */

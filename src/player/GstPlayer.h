@@ -14,7 +14,7 @@
 #include "IPlayer.h"
 #include "GstPlayerConfig.h"
 
-namespace slimprotolib {
+namespace squeezeclient {
 
 class GstPlayer : public IPlayer {
 
@@ -96,6 +96,6 @@ public:
 	void SkipFrames(uint32_t skippingDuration);
 };
 
-} /* namespace slimprotolib */
+} /* namespace squeezeclient */
 
 #endif /* SRC_TEST_GSTPLAYER_H_ */

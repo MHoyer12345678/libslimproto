@@ -6,6 +6,8 @@
  */
 #include "GstPlayerConfig.h"
 
+using namespace squeezeclient;
+
 IGstPlayerConfig *GstPlayerDefaultConfig::instance=NULL;
 
 

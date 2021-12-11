@@ -9,7 +9,7 @@
 
 #include <time.h>
 
-using namespace slimprotolib;
+using namespace squeezeclient;
 
 Utils::Utils()
 {

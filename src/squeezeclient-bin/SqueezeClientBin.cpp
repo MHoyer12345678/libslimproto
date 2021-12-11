@@ -11,8 +11,7 @@
 #include <glib-unix.h>
 
 using namespace CppAppUtils;
-
-namespace slimprotolib {
+using namespace squeezeclient;
 
 SqueezeClientBin* SqueezeClientBin::instance=NULL;
 
@@ -121,6 +120,4 @@ const char* SqueezeClientBin::GetDevice()
 {
 	return "pulse";
 }
-
-} /* namespace slimprotolib */
 
