@@ -16,6 +16,18 @@ namespace squeezeclient {
 class IPlayer
 {
 public:
+	enum PlayerStateT
+	{
+		__NOT_SET		= 0,
+		STOPPED			= 1,
+		PLAYING			= 2,
+		PAUSED			= 3,
+		__NEXT_FREE		= 4
+	};
+
+	static const char *PLAYER_STATE_NAMES[];
+
+
 	typedef struct StreamingServerInfoT
 	{
 		in_addr_t ip;
@@ -79,10 +91,20 @@ public:
 		 * Called on an ended track.
 		 */
 		virtual void OnTrackEnded()=0;
+
+		/**
+		 * Called on changed player state
+		 */
+		virtual void OnPlayerStateChanged(PlayerStateT state)=0;
 	};
 
 protected:
+	void SetStateAndNotify(PlayerStateT newState);
+
 	IPlayerEventListener *playerEventListener;
+
+	PlayerStateT playerState;
+
 
 public:
 	IPlayer();
@@ -106,6 +128,8 @@ public:
 	virtual void Pause()=0;
 
 	virtual void SkipFrames(uint32_t skippingDuration)=0;
+
+	virtual PlayerStateT GetPlayerState();
 
 };
 

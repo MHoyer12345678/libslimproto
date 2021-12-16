@@ -22,7 +22,7 @@ libsqueezeclient_a_SOURCES = \
 	player/GstPlayer.cpp					\
 	player/GstPlayer.h						\
 	include/IPlayer.h						\
-	include/GstPlayerConfig.h
+	include/GstPlayerConfig.h				
 	
 
 libsqueezeclient_a_CPPFLAGS  = \
@@ -39,9 +39,15 @@ libsqueezeclient_a_CPPFLAGS  = \
 		$(GSTREAMER_CFLAGS)
 		
 squeezeclient_SOURCES = \
-	squeezeclient-bin/mainSqueezeClientBin.cpp		\
-	squeezeclient-bin/SqueezeClientBin.cpp			\
-	squeezeclient-bin/SqueezeClientBin.h
+	squeezeclient-bin/mainSqueezeClientBin.cpp							\
+	squeezeclient-bin/SqueezeClientBin.cpp								\
+	squeezeclient-bin/SqueezeClientBin.h								\
+	squeezeclient-bin/SCBConfig.cpp										\
+	squeezeclient-bin/SCBConfig.h										\
+	squeezeclient-bin/SCBController.cpp									\
+	squeezeclient-bin/SCBController.h									\
+	squeezeclient-bin/generated/SqueezeClientInteface.c					\
+	squeezeclient-bin/generated/SqueezeClientInteface.h
 
 squeezeclient_CPPFLAGS = \
 		-Iinclude				\
@@ -71,7 +77,7 @@ CLEANFILES    =  squeezeclient-bin/generated/SqueezeClientInteface.c  \
 
 # Targets to create generated sources during the build
 squeezeclient-bin/generated/SqueezeClientInteface.c squeezeclient-bin/generated/SqueezeClientInteface.h: squeezeclient-bin/dbus/squeezeclient-bin.xml
-	gdbus-codegen --interface-prefix=SqueezeClientBin. --c-namespace=SqueezeClient --generate-c-code=squeezeclient-bin/generated/SqueezeClientInteface squeezeclient-bin/dbus/squeezeclient-bin.xml
+	gdbus-codegen --interface-prefix=SqueezeClientBinDBus. --generate-c-code=squeezeclient-bin/generated/SqueezeClientInteface squeezeclient-bin/dbus/squeezeclient-bin.xml
 
 test_libsqueezeclient_SOURCES =		\
 	test/mainSlimProtoTest.cpp	\

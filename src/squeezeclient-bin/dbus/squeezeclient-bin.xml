@@ -1,5 +1,5 @@
 <node>
-  <interface name="SqueezeClientBin">
+  <interface name="Squeeze.Client.Control">
 
     <method name="RequestPlay"/>
 
@@ -21,11 +21,14 @@
     
     <method name="RequestVolDown"/>
 
-	<property name="Volume" type="u" access="read"/>
+    <method name="RequestMute"/>
 
-	<property name="PowerState" type="b" access="read"/>
-    
-	<property name="PlayerState" type="y" access="read"/>
-    
+	<property name="VolumeL" type="u" access="read"/>
+
+	<property name="VolumeR" type="u" access="read"/>
+
+	<property name="SqueezeClientState" type="y" access="read"/>
+
+	<signal name="VolumeChanged"/>    
   </interface>
 </node>

@@ -25,10 +25,10 @@ using namespace squeezeclient;
 
 
 GstPlayer::GstPlayer(IGstPlayerConfig *config) :
-		busWatchId(0),
-		needPlaybackReadySignal(false),
-		clockCalibrationMS(0),
-		configuration(config)
+				busWatchId(0),
+				needPlaybackReadySignal(false),
+				clockCalibrationMS(0),
+				configuration(config)
 {
 	memset(&this->pipelineElements, 0, sizeof(PipeLineElementsT));
 }
@@ -45,50 +45,52 @@ bool GstPlayer::Init()
 
 	needPlaybackReadySignal=false;
 
-	 Logger::LogDebug("GstPlayer::Init - Initializing player.");
+	Logger::LogDebug("GstPlayer::Init - Initializing player.");
 
-	 gst_init(NULL,NULL);
+	gst_init(NULL,NULL);
 
-	 Logger::LogDebug("GstPlayer::Init - Creating pipeline and elements.");
+	Logger::LogDebug("GstPlayer::Init - Creating pipeline and elements.");
 
-	 //create pipeline
-	 this->pipelineElements.pipeline=gst_pipeline_new ("GstSqueezePlayer_Pipeline");
-	 if (this->pipelineElements.pipeline==NULL)
-	 {
-		 Logger::LogError("Unable to create GST pipeline.");
-		 return false;
-	 }
+	//create pipeline
+	this->pipelineElements.pipeline=gst_pipeline_new ("GstSqueezePlayer_Pipeline");
+	if (this->pipelineElements.pipeline==NULL)
+	{
+		Logger::LogError("Unable to create GST pipeline.");
+		return false;
+	}
 
-	 this->pipelineElements.soupHttpSource=this->CreateElement("souphttpsrc", "http_source");
-	 this->pipelineElements.decodeBin=this->CreateElement("decodebin", "decode_bin");
-	 this->pipelineElements.audioConvert=this->CreateElement("audioconvert", "audio_convert");
-	 this->pipelineElements.audioAutoSink=this->CreateElement(
-			 this->configuration->GetGstAudioSinkElementType(), "audio_sink");
+	this->pipelineElements.soupHttpSource=this->CreateElement("souphttpsrc", "http_source");
+	this->pipelineElements.decodeBin=this->CreateElement("decodebin", "decode_bin");
+	this->pipelineElements.audioConvert=this->CreateElement("audioconvert", "audio_convert");
+	this->pipelineElements.audioAutoSink=this->CreateElement(
+			this->configuration->GetGstAudioSinkElementType(), "audio_sink");
 
-	 this->configuration->DoConfigureSinkElement(this->pipelineElements.audioAutoSink);
+	this->configuration->DoConfigureSinkElement(this->pipelineElements.audioAutoSink);
 
-	 if (this->pipelineElements.soupHttpSource==NULL || this->pipelineElements.decodeBin==NULL ||
-			 this->pipelineElements.audioConvert==NULL || this->pipelineElements.audioAutoSink==NULL)
-		 return false;
+	if (this->pipelineElements.soupHttpSource==NULL || this->pipelineElements.decodeBin==NULL ||
+			this->pipelineElements.audioConvert==NULL || this->pipelineElements.audioAutoSink==NULL)
+		return false;
 
-	 bus = gst_pipeline_get_bus (GST_PIPELINE (this->pipelineElements.pipeline));
-	 this->busWatchId = gst_bus_add_watch (bus, GstPlayer::OnBusMessage, this);
-	 gst_object_unref (bus);
+	bus = gst_pipeline_get_bus (GST_PIPELINE (this->pipelineElements.pipeline));
+	this->busWatchId = gst_bus_add_watch (bus, GstPlayer::OnBusMessage, this);
+	gst_object_unref (bus);
 
-	 Logger::LogDebug("GstPlayer::Init - Linking elements in pipeline.");
-	 gst_bin_add_many (GST_BIN (this->pipelineElements.pipeline), this->pipelineElements.soupHttpSource,
-			 this->pipelineElements.decodeBin, this->pipelineElements.audioConvert, this->pipelineElements.audioAutoSink, NULL);
+	Logger::LogDebug("GstPlayer::Init - Linking elements in pipeline.");
+	gst_bin_add_many (GST_BIN (this->pipelineElements.pipeline), this->pipelineElements.soupHttpSource,
+			this->pipelineElements.decodeBin, this->pipelineElements.audioConvert, this->pipelineElements.audioAutoSink, NULL);
 
-	 if (!this->LinkElements(this->pipelineElements.soupHttpSource, this->pipelineElements.decodeBin, "souphttpsrc with decodebin."))
-		 return false;
+	if (!this->LinkElements(this->pipelineElements.soupHttpSource, this->pipelineElements.decodeBin, "souphttpsrc with decodebin."))
+		return false;
 
-	 //need to link decodebin and audioconvert dynamically
-	 g_signal_connect (this->pipelineElements.decodeBin, "pad-added", G_CALLBACK (GstPlayer::OnPadAdded), this);
+	//need to link decodebin and audioconvert dynamically
+	g_signal_connect (this->pipelineElements.decodeBin, "pad-added", G_CALLBACK (GstPlayer::OnPadAdded), this);
 
-	 if (!this->LinkElements(this->pipelineElements.audioConvert, this->pipelineElements.audioAutoSink, "audioconvert with autoaudiosink."))
-		 return false;
+	if (!this->LinkElements(this->pipelineElements.audioConvert, this->pipelineElements.audioAutoSink, "audioconvert with autoaudiosink."))
+		return false;
 
-	 return true;
+	this->SetStateAndNotify(PlayerStateT::STOPPED);
+
+	return true;
 }
 
 GstElement *GstPlayer::CreateElement(const char *factoryElement, const char *name)
@@ -96,21 +98,21 @@ GstElement *GstPlayer::CreateElement(const char *factoryElement, const char *nam
 	GstElement *element;
 
 	element=gst_element_factory_make (factoryElement, name);
-	 if (element==NULL)
-		 Logger::LogError("Unable to create GST element %s as %s.", factoryElement, name);
+	if (element==NULL)
+		Logger::LogError("Unable to create GST element %s as %s.", factoryElement, name);
 
-	 return element;
+	return element;
 }
 
 bool GstPlayer::LinkElements(GstElement *srcE,GstElement *sinkE, const char *whomToLinkStr)
 {
-	 if (gst_element_link (srcE, sinkE) != TRUE)
-	 {
-		 Logger::LogError("Unable to link %s.", whomToLinkStr);
-	     return false;
-	 }
+	if (gst_element_link (srcE, sinkE) != TRUE)
+	{
+		Logger::LogError("Unable to link %s.", whomToLinkStr);
+		return false;
+	}
 
-	 return true;
+	return true;
 }
 
 void GstPlayer::DeInit()
@@ -132,22 +134,22 @@ void GstPlayer::UpdatePlayerStatus(PlayerStatusT *status)
 	GstClockTime runningTime;
 
 	assert(status != NULL);
-    Logger::LogDebug("GstPlayer::UpdatePlayerStatus - Filling player status data structure.");
+	Logger::LogDebug("GstPlayer::UpdatePlayerStatus - Filling player status data structure.");
 
-    assert(this->pipelineElements.pipeline!=NULL);
-    //returns play time in nano secs
-    runningTime=gst_element_get_current_running_time(this->pipelineElements.audioAutoSink);
-    status->elapsedMilliseconds=runningTime/1000000;
-    Logger::LogDebug("GstPlayer::UpdatePlayerStatus - ElapsedMillisoncs: %d", status->elapsedMilliseconds);
+	assert(this->pipelineElements.pipeline!=NULL);
+	//returns play time in nano secs
+	runningTime=gst_element_get_current_running_time(this->pipelineElements.audioAutoSink);
+	status->elapsedMilliseconds=runningTime/1000000;
+	Logger::LogDebug("GstPlayer::UpdatePlayerStatus - ElapsedMillisoncs: %d", status->elapsedMilliseconds);
 
-    //uint32_t streamBufferSize;
+	//uint32_t streamBufferSize;
 	//uint32_t streamBufferFullness;
 	//uint64_t bytesReceived;
 	//uint32_t outputBufferSize;
 	//uint32_t outputBufferFullness;
 
 
-    //uint32_t elapsedMilliseconds;
+	//uint32_t elapsedMilliseconds;
 
 }
 
@@ -207,7 +209,7 @@ bool GstPlayer::PlayStream(const char *url, const char *headersStr, bool autosta
 
 	if (ret==GST_STATE_CHANGE_SUCCESS || GST_STATE_CHANGE_NO_PREROLL==GST_STATE_CHANGE_SUCCESS)
 	{
-		if (!autostart && this->playerEventListener)
+		if (!autostart && this->playerEventListener!=NULL)
 			this->playerEventListener->OnReadyToPlay();
 	}
 	else if (ret==GST_STATE_CHANGE_FAILURE)
@@ -228,28 +230,39 @@ void GstPlayer::Stop()
 {
 	Logger::LogDebug("GstPlayer::Stop - Stopping currently playing stream.");
 	if (this->pipelineElements.pipeline!=NULL)
-	{
 		gst_element_set_state (this->pipelineElements.pipeline, GST_STATE_READY);
-	}
 	else
 		Logger::LogError("Called stop on not initialized player.");
 }
 
 void GstPlayer::OnPipelineStateChanged()
 {
-	GstState state;
+	GstState gstState;
 	GstStateChangeReturn ret;
 
 	//timeout 100ms in ns
-	ret=gst_element_get_state(this->pipelineElements.pipeline, &state, NULL, 100000000L);
+	ret=gst_element_get_state(this->pipelineElements.pipeline, &gstState, NULL, 100000000L);
 	if (ret==GST_STATE_CHANGE_SUCCESS)
 	{
-		Logger::LogDebug("GstPlayer::OnPipelineStateChanged - Pipeline state changed to %d", state);
-		if (state==GST_STATE_PAUSED && this->needPlaybackReadySignal &&
-				this->playerEventListener!=NULL)
+		Logger::LogDebug("GstPlayer::OnPipelineStateChanged - Pipeline state changed to %d", gstState);
+		switch(gstState)
 		{
-			this->playerEventListener->OnReadyToPlay();
-			this->needPlaybackReadySignal=false;
+		case GST_STATE_PAUSED:
+			if (this->needPlaybackReadySignal && this->playerEventListener!=NULL)
+			{
+				this->playerEventListener->OnReadyToPlay();
+				this->needPlaybackReadySignal=false;
+			}
+			this->SetStateAndNotify(PlayerStateT::PAUSED);
+			break;
+		case GST_STATE_PLAYING:
+			this->SetStateAndNotify(PlayerStateT::PLAYING);
+			break;
+		case GST_STATE_READY:
+			this->SetStateAndNotify(PlayerStateT::STOPPED);
+			break;
+		default:
+			break;
 		}
 	}
 }
@@ -289,68 +302,68 @@ gboolean GstPlayer::OnBusMessage(GstBus *bus, GstMessage *message,
 
 	switch (GST_MESSAGE_TYPE (message))
 	{
-		case GST_MESSAGE_STATE_CHANGED:
-    		if (message->src==(GstObject *)instance->pipelineElements.pipeline)
-    			instance->OnPipelineStateChanged();
-    		break;
+	case GST_MESSAGE_STATE_CHANGED:
+		if (message->src==(GstObject *)instance->pipelineElements.pipeline)
+			instance->OnPipelineStateChanged();
+		break;
 
-    	case GST_MESSAGE_ELEMENT:
-    		if (message->src==(GstObject *)instance->pipelineElements.soupHttpSource)
-    		{
-    			const GstStructure *structure=gst_message_get_structure(message);
-    			char *responseStr=NULL;
-    			if (instance->CreateResponseString(structure, &responseStr))
-				{
-    				Logger::LogDebug("GstPlayer::OnBusMessage - response string derived from header structure.");
-    				if (instance->playerEventListener!=NULL)
-    					instance->playerEventListener->OnConnectionResponseReceived(responseStr);
-    				free(responseStr);
-				}
-    		}
-    		break;
-    	case GST_MESSAGE_EOS:
-	    	instance->OnEoSMessage();
-			break;
+	case GST_MESSAGE_ELEMENT:
+		if (message->src==(GstObject *)instance->pipelineElements.soupHttpSource)
+		{
+			const GstStructure *structure=gst_message_get_structure(message);
+			char *responseStr=NULL;
+			if (instance->CreateResponseString(structure, &responseStr))
+			{
+				Logger::LogDebug("GstPlayer::OnBusMessage - response string derived from header structure.");
+				if (instance->playerEventListener!=NULL)
+					instance->playerEventListener->OnConnectionResponseReceived(responseStr);
+				free(responseStr);
+			}
+		}
+		break;
+	case GST_MESSAGE_EOS:
+		instance->OnEoSMessage();
+		break;
 
-	    case GST_MESSAGE_ERROR:
-	    {
-	      gchar  *debug;
-	      GError *error;
+	case GST_MESSAGE_ERROR:
+	{
+		gchar  *debug;
+		GError *error;
 
-	      gst_message_parse_error (message, &error, &debug);
-	      Logger::LogError("Gstreamer Pipeline Error: %s", error->message);
-	      if (debug!=NULL)
-		      Logger::LogError("Debug info: %s", debug);
-	      g_error_free (error);
-	      g_free (debug);
-	      break;
-	    }
+		gst_message_parse_error (message, &error, &debug);
+		Logger::LogError("Gstreamer Pipeline Error: %s", error->message);
+		if (debug!=NULL)
+			Logger::LogError("Debug info: %s", debug);
+		g_error_free (error);
+		g_free (debug);
+		break;
+	}
 
-	    default:
-	      break;
-	  }
+	default:
+		break;
+	}
 
-	  return TRUE;
+	return TRUE;
 }
 
 void GstPlayer::OnEoSMessage()
 {
-    Logger::LogDebug("GstPlayer::OnEoSMessage - gstreamer pipeline informed us about end of stream.");
-    this->Stop();
-    if (this->playerEventListener!=NULL)
-    	this->playerEventListener->OnTrackEnded();
+	Logger::LogDebug("GstPlayer::OnEoSMessage - gstreamer pipeline informed us about end of stream.");
+	this->Stop();
+	if (this->playerEventListener!=NULL)
+		this->playerEventListener->OnTrackEnded();
 }
 
 void GstPlayer::OnPadAdded(GstElement *element, GstPad *pad, gpointer data)
 {
-    GstPad *sinkpad;
+	GstPad *sinkpad;
 
-    GstPlayer* instance=(GstPlayer *)data;
-    Logger::LogDebug("GstPlayer::OnPadAdded - decodebin added pad: ");
+	GstPlayer* instance=(GstPlayer *)data;
+	Logger::LogDebug("GstPlayer::OnPadAdded - decodebin added pad: ");
 
-    sinkpad = gst_element_get_static_pad (instance->pipelineElements.audioConvert, "sink");
-    gst_pad_link (pad, sinkpad);
-    gst_object_unref (sinkpad);
+	sinkpad = gst_element_get_static_pad (instance->pipelineElements.audioConvert, "sink");
+	gst_pad_link (pad, sinkpad);
+	gst_object_unref (sinkpad);
 }
 
 GstStructure* GstPlayer::CreateHeadersStructureFromRequestStr(const char *headersStr)

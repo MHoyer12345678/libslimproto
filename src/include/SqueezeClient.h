@@ -17,6 +17,17 @@ namespace squeezeclient {
 class SqueezeClient {
 
 public:
+	static const char* CLIENT_STATE_NAMES[];
+
+	enum SqueezeClientStateT
+	{
+		__NOT_SET	= 0,
+		STOPPED		= IPlayer::PlayerStateT::STOPPED,
+		PLAYING		= IPlayer::PlayerStateT::PLAYING,
+		PAUSED		= IPlayer::PlayerStateT::PAUSED,
+		POWERED_OFF	= IPlayer::PlayerStateT::__NEXT_FREE,
+	};
+
 	class IEventInterface
 	{
 	public:
@@ -31,22 +42,27 @@ public:
 
 		virtual void OnServerSetsNewPlayerName(const char *newName)=0;
 
-		virtual void OnPowerStateChanged(bool value)=0;
+		virtual void OnClientStateChanged(SqueezeClientStateT newState)=0;
 
 		virtual void OnVolumeChanged(unsigned int volL, unsigned int volR)=0;
 
-		/** missing
-		  * - Player attributes (gst / alsa / ???)
-		  * - configure ip & port
+		/** TODO: missing
+		  * configure ip & port
 		  * */
 	};
 
-
 	enum PowerSignalT
 	{
-		POWER_TOGGLE,
-		POWER_OFF,
-		POWER_ON
+		POWER_TOGGLE=0,
+		POWER_OFF	=1,
+		POWER_ON	=2
+	};
+
+	enum PauseResumeModeT
+	{
+		TOGGLE	= 0,
+		PAUSE	= 1,
+		RESUME	= 2
 	};
 
 public:
@@ -70,6 +86,10 @@ public:
 
 	virtual void SignalPowerButtonPressed(PowerSignalT powerSignal)=0;
 
+	virtual void SignalPlayButtonPressed()=0;
+
+	virtual void SignalPauseButtonPressed()=0;
+
 	virtual void SignalNextButtonPressed()=0;
 
 	virtual void SignalPreviousButtonPressed()=0;
@@ -78,10 +98,13 @@ public:
 
 	virtual void SignalVolDownButtonPressed()=0;
 
+	virtual void SignalMuteButtonPressed()=0;
+
 	virtual void SignalFakeFaster()=0;
 
 	virtual void SignalFakeSlower()=0;
 
+	virtual SqueezeClientStateT GetState()=0;
 };
 
 } /* squeezeclient */

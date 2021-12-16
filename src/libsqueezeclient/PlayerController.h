@@ -20,8 +20,7 @@ class PlayerController : public LMSConnection::IConnectionListener,
 	public CommandFactory::IServerCmdListener, public IPlayer::IPlayerEventListener
 {
 private:
-
-
+	SqueezeClient::SqueezeClientStateT clientState;
 
 	SqueezeClient::IEventInterface *squeezeClientEventInterface;
 
@@ -42,6 +41,8 @@ public:
 	virtual void OnReadyToPlay();
 
 	virtual void OnTrackEnded();
+
+	virtual void OnPlayerStateChanged(IPlayer::PlayerStateT state);
 
 	//----------- IConnectionListener ---------------------------------------
 	virtual void OnConnectionEstablished();
@@ -91,6 +92,10 @@ public:
 
 	void SignalPowerButtonPressed(SqueezeClient::PowerSignalT powerSignal);
 
+	void SignalPlayButtonPressed();
+
+	void SignalPauseButtonPressed();
+
 	void SignalNextButtonPressed();
 
 	void SignalPreviousButtonPressed();
@@ -98,6 +103,10 @@ public:
 	void SignalVolUpButtonPressed();
 
 	void SignalVolDownButtonPressed();
+
+	void SignalMuteButtonPressed();
+
+	SqueezeClient::SqueezeClientStateT GetClientState();
 
 #warning Remove following functions later
 

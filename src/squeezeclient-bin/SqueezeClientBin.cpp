@@ -18,14 +18,18 @@ SqueezeClientBin* SqueezeClientBin::instance=NULL;
 SqueezeClientBin::SqueezeClientBin() :
 		returnCode(0)
 {
+	this->config=new SCBConfig();
+	this->controller=new SCBController(this->config);
+
 	this->mainloop=g_main_loop_new(NULL,FALSE);
-	this->squeezeClient=SqueezeClient::NewWithGstPlayerCustomConfig(this, this);
 }
 
 SqueezeClientBin::~SqueezeClientBin()
 {
-	SqueezeClient::Destroy(this->squeezeClient);
 	g_main_loop_unref (this->mainloop);
+
+	delete this->controller;
+	delete this->config;
 }
 
 SqueezeClientBin* SqueezeClientBin::Instance()
@@ -43,19 +47,21 @@ bool SqueezeClientBin::Init(int argc, char *argv[])
 
 	Logger::LogDebug("SqueezeClientBin::Init - Initalizing SqueezeClientBin");
 
-	if (!this->squeezeClient->Init())
-		return false;
-
     g_unix_signal_add(1, &UnixSignalHandler, this);
     g_unix_signal_add(2, &UnixSignalHandler, this);
     g_unix_signal_add(15, &UnixSignalHandler, this);
 
+    if (!this->controller->Init())
+    	return false;
+
+    this->controller->KickOff();
    	return true;
 }
 
 void SqueezeClientBin::DeInit()
 {
-	this->squeezeClient->DeInit();
+	this->controller->DeInit();
+
 	delete this;
 	SqueezeClientBin::instance=NULL;
 
@@ -71,7 +77,6 @@ gboolean SqueezeClientBin::UnixSignalHandler(gpointer user_data)
 
 void SqueezeClientBin::Run()
 {
-    this->squeezeClient->KickOff();
 	Logger::LogDebug("SqueezeClientBin::Run -> Going to enter main loop.");
 	g_main_loop_run(this->mainloop);
 	Logger::LogDebug("SqueezeClientBin::Run -> Main loop left. Shutting down.");
@@ -81,43 +86,3 @@ int SqueezeClientBin::GetReturnCode()
 {
 	return this->returnCode;
 }
-
-void SqueezeClientBin::OnPlayerNameRequested(char name[1024])
-{
-	strncpy(name, "A test player2",1023);
-	Logger::LogInfo("Client requested player name from us.");
-}
-
-void SqueezeClientBin::OnUIDRequested(char uid[16])
-{
-	memcpy(uid, "Dies ist eine id", 16);
-	Logger::LogInfo("Client requested uid from us.");
-}
-
-void SqueezeClientBin::OnMACAddressRequested(uint8_t mac[6])
-{
-	uint8_t MAC_ADDRESS[6]={0x5C,0xE0, 0xC5, 0x49, 0x54, 0xAD};
-	memcpy(mac, MAC_ADDRESS,6);
-	Logger::LogInfo("Client requested mac address from us.");
-}
-
-void SqueezeClientBin::OnServerSetsNewPlayerName(const char *newName)
-{
-	Logger::LogInfo("Server changed our name to: %s", newName);
-}
-
-void SqueezeClientBin::OnPowerStateChanged(bool value)
-{
-	Logger::LogInfo("Server changed our power state to: %s", value ? "On" : "Off");
-}
-
-void SqueezeClientBin::OnVolumeChanged(unsigned int volL, unsigned int volR)
-{
-	Logger::LogInfo("Server changed our volume: L=%u, R=%u", volL, volR);
-}
-
-const char* SqueezeClientBin::GetDevice()
-{
-	return "pulse";
-}
-

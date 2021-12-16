@@ -44,6 +44,10 @@ public:
 
 	virtual void SignalPowerButtonPressed(PowerSignalT powerSignal);
 
+	virtual void SignalPlayButtonPressed();
+
+	virtual void SignalPauseButtonPressed();
+
 	virtual void SignalNextButtonPressed();
 
 	virtual void SignalPreviousButtonPressed();
@@ -52,9 +56,13 @@ public:
 
 	virtual void SignalVolDownButtonPressed();
 
+	virtual void SignalMuteButtonPressed();
+
 	virtual void SignalFakeFaster();
 
 	virtual void SignalFakeSlower();
+
+	virtual SqueezeClientStateT GetState();
 };
 
 } /* namespace squeezeclient */

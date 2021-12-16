@@ -11,6 +11,15 @@
 
 using namespace squeezeclient;
 
+const char* SqueezeClient::CLIENT_STATE_NAMES[]=
+		{
+				"__NOT_SET",
+				IPlayer::PLAYER_STATE_NAMES[IPlayer::PlayerStateT::STOPPED],
+				IPlayer::PLAYER_STATE_NAMES[IPlayer::PlayerStateT::PLAYING],
+				IPlayer::PLAYER_STATE_NAMES[IPlayer::PlayerStateT::PAUSED],
+				"POWERED_OFF"
+		};
+
 SqueezeClient *SqueezeClient::NewWithGstPlayerCustomConfig(IEventInterface *evIFace,
 		IGstPlayerConfig *configuration)
 {
@@ -32,3 +41,4 @@ void SqueezeClient::Destroy(SqueezeClient *squeezeClient)
 {
 	SqueezeClientImpl::Destroy((SqueezeClientImpl *)squeezeClient);
 }
+

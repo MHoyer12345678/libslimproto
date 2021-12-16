@@ -74,6 +74,16 @@ void SqueezeClientImpl::SignalPowerButtonPressed(PowerSignalT powerSignal)
 	this->controller->SignalPowerButtonPressed(powerSignal);
 }
 
+void SqueezeClientImpl::SignalPlayButtonPressed()
+{
+	this->controller->SignalPlayButtonPressed();
+}
+
+void SqueezeClientImpl::SignalPauseButtonPressed()
+{
+	this->controller->SignalPauseButtonPressed();
+}
+
 void SqueezeClientImpl::SignalNextButtonPressed()
 {
 	this->controller->SignalNextButtonPressed();
@@ -99,6 +109,11 @@ void SqueezeClientImpl::SignalVolDownButtonPressed()
 	this->controller->SignalVolDownButtonPressed();
 }
 
+void SqueezeClientImpl::SignalMuteButtonPressed()
+{
+	this->controller->SignalMuteButtonPressed();
+}
+
 void SqueezeClientImpl::SignalFakeFaster()
 {
 	this->controller->SignalFakeFaster();
@@ -108,3 +123,9 @@ void SqueezeClientImpl::SignalFakeSlower()
 {
 	this->controller->SignalFakeSlower();
 }
+
+SqueezeClient::SqueezeClientStateT SqueezeClientImpl::GetState()
+{
+	return this->controller->GetClientState();
+}
+

@@ -15,8 +15,6 @@
 
 #include "Utils.h"
 
-#define IR_CMD_ON		0x76898f70
-#define IR_CMD_OFF		0x76898778
 #define IR_CMD_POWER	0x768940bf
 #define IR_CMD_POWERON	0x76898f70
 #define IR_CMD_POWEROFF	0x76898778
@@ -24,14 +22,17 @@
 #define IR_CMD_PREV		0x7689c03f
 #define IR_CMD_VOLUP	0x7689807f
 #define IR_CMD_VOLDOWN	0x768900ff
-#define IR_CMD_PAUSE	0x7689c03f
+#define IR_CMD_PAUSE	0x768920df
+#define IR_CMD_PLAY		0x768910ef
+#define IR_CMD_MUTE		0x7689c43b
 
 using CppAppUtils::Logger;
 using namespace squeezeclient;
 
 PlayerController::PlayerController(SqueezeClient::IEventInterface *evIFace, IPlayer *aPlayer) :
 		player(aPlayer),
-		squeezeClientEventInterface(evIFace)
+		squeezeClientEventInterface(evIFace),
+		clientState(SqueezeClient::SqueezeClientStateT::POWERED_OFF)
 {
 	assert(aPlayer!=NULL);
 	memset(&this->lmsPlayerStatusData, 0, sizeof(IPlayer::PlayerStatusT));
@@ -48,8 +49,10 @@ PlayerController::~PlayerController()
 
 bool PlayerController::Init()
 {
+	clientState=SqueezeClient::SqueezeClientStateT::POWERED_OFF;
+
 	if (!this->lmsConnection->Init())
-			return false;
+		return false;
 
     return true;
 }
@@ -62,6 +65,8 @@ void PlayerController::DeInit()
 		this->lmsConnection->Disconnect();
 	}
     this->lmsConnection->DeInit();
+
+    clientState=SqueezeClient::SqueezeClientStateT::POWERED_OFF;
 }
 
 void PlayerController::OnConnectionEstablished()
@@ -139,6 +144,19 @@ void PlayerController::SignalPowerButtonPressed(SqueezeClient::PowerSignalT powe
     }
 }
 
+void PlayerController::SignalPlayButtonPressed()
+{
+    Logger::LogDebug("PlayerController::SignalPlayButtonPressed - Play button pressed.");
+    if (this->clientState!=SqueezeClient::SqueezeClientStateT::PLAYING)
+    	this->commandFactory->SendIRCmd(IR_CMD_PLAY);
+}
+
+void PlayerController::SignalPauseButtonPressed()
+{
+    Logger::LogDebug("PlayerController::SignalPauseButtonPressed - Pause button pressed.");
+    this->commandFactory->SendIRCmd(IR_CMD_PAUSE);
+}
+
 void PlayerController::SignalNextButtonPressed()
 {
     Logger::LogDebug("PlayerController::SignalNextButtonPressed - Next button pressed.");
@@ -155,6 +173,18 @@ void PlayerController::SignalVolUpButtonPressed()
 {
     Logger::LogDebug("PlayerController::SignalVolUpButtonPressed - Volup button pressed.");
     this->commandFactory->SendIRCmd(IR_CMD_VOLUP);
+}
+
+void PlayerController::SignalVolDownButtonPressed()
+{
+    Logger::LogDebug("PlayerController::SignalVolDownButtonPressed - VolDown button pressed.");
+    this->commandFactory->SendIRCmd(IR_CMD_VOLDOWN);
+}
+
+void PlayerController::SignalMuteButtonPressed()
+{
+    Logger::LogDebug("PlayerController::SignalMuteButtonPressed - Mute button pressed.");
+    this->commandFactory->SendIRCmd(IR_CMD_MUTE);
 }
 
 void PlayerController::UpdatePlayerStatusData()
@@ -248,7 +278,21 @@ void PlayerController::OnSrvRequestedAudioEnabledChange(bool spdiffEnabled,
     Logger::LogDebug("PlayerController::OnSrvRequestedAudioEnabledChange - SPDIFF: %s, DAC: %s.",
     		spdiffEnabled ? "true":"false", dacEnabled ? "true":"false");
 
-    this->squeezeClientEventInterface->OnPowerStateChanged(dacEnabled || spdiffEnabled);
+    //take this one as indication for POWER_ON / POWER_OFF
+    if (dacEnabled || spdiffEnabled)
+    {
+    	//already on -> return
+    	if (this->clientState!=SqueezeClient::SqueezeClientStateT::POWERED_OFF) return;
+    	this->clientState=(SqueezeClient::SqueezeClientStateT)this->player->GetPlayerState();
+    }
+    else
+    {
+    	//already off -> return
+    	if (this->clientState==SqueezeClient::SqueezeClientStateT::POWERED_OFF) return;
+    	this->clientState=SqueezeClient::SqueezeClientStateT::POWERED_OFF;
+    }
+
+    this->squeezeClientEventInterface->OnClientStateChanged(this->clientState);
 }
 
 void PlayerController::OnSrvRequestedDisableDACSetting()
@@ -291,11 +335,25 @@ void PlayerController::OnSrvRequestedLoadStream(
 	this->commandFactory->SendSTMsCmd(&this->lmsPlayerStatusData);
 }
 
-void PlayerController::SignalVolDownButtonPressed()
+void PlayerController::OnPlayerStateChanged(
+		IPlayer::PlayerStateT state)
 {
-    Logger::LogDebug("PlayerController::SignalVolDownButtonPressed - VolDown button pressed.");
-    this->commandFactory->SendIRCmd(IR_CMD_VOLDOWN);
+    Logger::LogInfo("Player changed to state: %s",IPlayer::PLAYER_STATE_NAMES[state]);
+    //state changes of player are just of interest when switched on
+    if (this->clientState!=SqueezeClient::SqueezeClientStateT::POWERED_OFF)
+    {
+    	//just cast, state maping of enums is done in SqueezeClient.h
+    	this->clientState=(SqueezeClient::SqueezeClientStateT)state;
+    	this->squeezeClientEventInterface->OnClientStateChanged(this->clientState);
+    }
 }
+
+SqueezeClient::SqueezeClientStateT PlayerController::GetClientState()
+{
+	return this->clientState;
+}
+
+#warning following functions away later
 
 void PlayerController::SignalFakeFaster()
 {

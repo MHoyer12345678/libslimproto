@@ -10,16 +10,18 @@
 
 #include <glib.h>
 
-#include "SqueezeClient.h"
-#include "GstPlayerConfig.h"
+#include "SCBConfig.h"
+#include "SCBController.h"
 
 namespace squeezeclient {
 
-class SqueezeClientBin : public SqueezeClient::IEventInterface, GstPlayerAlsaSinkConfig {
+class SqueezeClientBin {
 private:
 	static SqueezeClientBin* instance;
 
-	SqueezeClient *squeezeClient;
+	SCBConfig *config;
+
+	SCBController *controller;
 
 	GMainLoop *mainloop;
 
@@ -41,22 +43,8 @@ public:
 	void Run();
 
 	int GetReturnCode();
-
-	void OnPlayerNameRequested(char name[1024]);
-
-	void OnUIDRequested(char uid[16]);
-
-	void OnMACAddressRequested(uint8_t mac[6]);
-
-	void OnServerSetsNewPlayerName(const char *newName);
-
-	void OnPowerStateChanged(bool value);
-
-	void OnVolumeChanged(unsigned int volL, unsigned int volR);
-
-	const char *GetDevice();
 };
 
-} /* namespace slimprotolib */
+} /* namespace squeezeclient */
 
 #endif /* SRC_TEST_SLIMPROTOTEST_H_ */

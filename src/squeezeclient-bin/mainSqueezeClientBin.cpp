@@ -10,7 +10,8 @@ int main(int argc, char* argv[])
 	int result;
 
 	//TODO: Change sort of
-	Logger::SetLogLevel(Logger::DEBUG);
+//	Logger::SetLogLevel(Logger::DEBUG);
+	Logger::SetLogLevel(Logger::INFO);
 
 	SqueezeClientBin* clientInstance=SqueezeClientBin::Instance();
 	if (clientInstance->Init(argc,argv))

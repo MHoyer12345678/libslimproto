@@ -1,9 +1,8 @@
 
-change namespace
-
 
 //squeezeclientbin
-- connect dbus interface
+- volume controll configurable (mixer vs. extern)
+- "mute ramp off" possible via CAPs ? Does it help further?
 - parse command line
 - config file support
 
@@ -14,7 +13,6 @@ change namespace
 
 //Architecture
 - arch refactor
-  * What is done in lib, what in test, how looks an application like, maybe reimpl squeezelite with lib, maybe start intergration into retroradio
   * Error concept and connect error reporting to server
 
 //packageing

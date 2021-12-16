@@ -173,9 +173,9 @@ void SlimProtoTest::OnServerSetsNewPlayerName(const char *newName)
 	Logger::LogInfo("Server changed our name to: %s", newName);
 }
 
-void SlimProtoTest::OnPowerStateChanged(bool value)
+void SlimProtoTest::OnClientStateChanged(SqueezeClient::SqueezeClientStateT newState)
 {
-	Logger::LogInfo("Server changed our power state to: %s", value ? "On" : "Off");
+	Logger::LogInfo("Server changed client state to: %s", SqueezeClient::CLIENT_STATE_NAMES[newState]);
 }
 
 void SlimProtoTest::OnVolumeChanged(unsigned int volL, unsigned int volR)

@@ -59,7 +59,7 @@ public:
 
 	void OnServerSetsNewPlayerName(const char *newName);
 
-	void OnPowerStateChanged(bool value);
+	void OnClientStateChanged(SqueezeClient::SqueezeClientStateT newState);
 
 	void OnVolumeChanged(unsigned int volL, unsigned int volR);
 
