@@ -50,7 +50,7 @@ public:
 
 	virtual void DoConfigureSinkElement(GstElement *sinkElement);
 
-	virtual const char *GetDevice()=0;
+	virtual const char *GetAlsaDeviceName()=0;
 };
 
 }; /* namespace squeezeclient */

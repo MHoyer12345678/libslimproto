@@ -9,6 +9,7 @@
 
 #include <cpp-app-utils/Logger.h>
 #include <glib-unix.h>
+#include <sysexits.h>
 
 using namespace CppAppUtils;
 using namespace squeezeclient;
@@ -42,10 +43,17 @@ SqueezeClientBin* SqueezeClientBin::Instance()
 
 bool SqueezeClientBin::Init(int argc, char *argv[])
 {
-	(void)argc;
-	(void)argv;
+	if (!this->config->ParseArgsEarly(argc,argv,this->returnCode))
+		return false;
 
-	Logger::LogDebug("SqueezeClientBin::Init - Initalizing SqueezeClientBin");
+	Logger::LogInfo("Starting squeezeclient %s",
+			SCBConfig::Version);
+
+	if (!this->config->ReadConfigurationFile())
+	{
+		this->returnCode=EX_CONFIG;
+		return false;
+	}
 
     g_unix_signal_add(1, &UnixSignalHandler, this);
     g_unix_signal_add(2, &UnixSignalHandler, this);

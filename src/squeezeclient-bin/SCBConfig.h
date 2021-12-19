@@ -10,17 +10,43 @@
 
 #include "GstPlayerConfig.h"
 
+#include "cpp-app-utils/Configuration.h"
+
+using namespace CppAppUtils;
+
+
+
 namespace squeezeclient {
 
-class SCBConfig : public GstPlayerAlsaSinkConfig
+class SCBConfig : public GstPlayerAlsaSinkConfig,
+	public Configuration::IConfigurationParserModule,
+	public Configuration
 {
+private:
+	char *alsaDeviceName;
+
+	char *alsaMixerName;
+
 public:
 	SCBConfig();
 
 	virtual ~SCBConfig();
 
-	const char *GetDevice();
+	bool ParseConfigFileItem(GKeyFile *confFile, const char *group, const char *key);
 
+	bool IsConfigFileGroupKnown(const char *group);
+
+	const char *GetAlsaDeviceName();
+
+	const char *GetAlsaMixerName();
+
+	const char *GetVersion();
+
+	const char *GetDescriptionString();
+
+	const char *GetCommand();
+
+	static const char *Version;
 };
 
 } /* namespace squeezeclient */

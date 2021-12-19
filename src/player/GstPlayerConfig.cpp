@@ -31,5 +31,5 @@ const char *GstPlayerAlsaSinkConfig::GetGstAudioSinkElementType()
 
 void GstPlayerAlsaSinkConfig::DoConfigureSinkElement(GstElement *sinkElement)
 {
-	g_object_set (G_OBJECT (sinkElement), "device", this->GetDevice(), NULL);
+	g_object_set (G_OBJECT (sinkElement), "device", this->GetAlsaDeviceName(), NULL);
 }

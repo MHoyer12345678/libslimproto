@@ -183,7 +183,7 @@ void SlimProtoTest::OnVolumeChanged(unsigned int volL, unsigned int volR)
 	Logger::LogInfo("Server changed our volume: L=%u, R=%u", volL, volR);
 }
 
-const char* SlimProtoTest::GetDevice()
+const char* SlimProtoTest::GetAlsaDeviceName()
 {
 	return "pulse";
 }

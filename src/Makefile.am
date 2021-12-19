@@ -128,4 +128,3 @@ test_gstplayer_LDADD	  = \
 		$(GOBJECT_LIBS)			\
 		$(GSTREAMER_LIBS)		\
 		$(LIBSOUP_LIBS)
-		

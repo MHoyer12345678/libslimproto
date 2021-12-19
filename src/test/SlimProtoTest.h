@@ -63,7 +63,7 @@ public:
 
 	void OnVolumeChanged(unsigned int volL, unsigned int volR);
 
-	const char *GetDevice();
+	const char *GetAlsaDeviceName();
 };
 
 } /* namespace squeezeclient */
