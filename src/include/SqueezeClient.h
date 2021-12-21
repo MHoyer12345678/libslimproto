@@ -10,8 +10,6 @@
 
 #include "IPlayer.h"
 
-#include "GstPlayerConfig.h"
-
 namespace squeezeclient {
 
 class SqueezeClient {
@@ -28,6 +26,20 @@ public:
 		POWERED_OFF	= IPlayer::PlayerStateT::__NEXT_FREE,
 	};
 
+	class IClientConfiguration
+	{
+	public:
+		virtual ~IClientConfiguration() {};
+
+		virtual void GetUID(char uid[16])=0;
+
+		virtual void GetMACAddress(uint8_t  mac[6])=0;
+
+		/** TODO: missing
+		  * configure ip & port
+		  * */
+	};
+
 	class IEventInterface
 	{
 	public:
@@ -36,19 +48,11 @@ public:
 
 		virtual void OnPlayerNameRequested(char name[1024])=0;
 
-		virtual void OnUIDRequested(char uid[16])=0;
-
-		virtual void OnMACAddressRequested(uint8_t  mac[6])=0;
-
 		virtual void OnServerSetsNewPlayerName(const char *newName)=0;
 
 		virtual void OnClientStateChanged(SqueezeClientStateT newState)=0;
 
 		virtual void OnVolumeChanged(unsigned int volL, unsigned int volR)=0;
-
-		/** TODO: missing
-		  * configure ip & port
-		  * */
 	};
 
 	enum PowerSignalT
@@ -68,15 +72,6 @@ public:
 public:
 
 	virtual ~SqueezeClient() {};
-
-	static SqueezeClient *NewWithGstPlayerCustomConfig(IEventInterface *evIFace,
-			IGstPlayerConfig *configuration);
-
-	static SqueezeClient *NewWithGstPlayerDefaultConfig(IEventInterface *evIFace);
-
-	static SqueezeClient *NewWithCustomPlayer(IEventInterface *evIFace, IPlayer *player);
-
-	static void Destroy(SqueezeClient *squeezeClient);
 
 	virtual bool Init()=0;
 

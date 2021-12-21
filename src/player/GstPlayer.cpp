@@ -40,16 +40,16 @@ GstPlayer::~GstPlayer()
 bool GstPlayer::Init()
 {
 	GstBus *bus;
+
 	if (this->pipelineElements.pipeline!=NULL)
 		this->DeInit();
 
-	needPlaybackReadySignal=false;
+	this->needPlaybackReadySignal=false;
 
 	Logger::LogDebug("GstPlayer::Init - Initializing player.");
 
-	gst_init(NULL,NULL);
-
 	Logger::LogDebug("GstPlayer::Init - Creating pipeline and elements.");
+	gst_init(NULL,NULL);
 
 	//create pipeline
 	this->pipelineElements.pipeline=gst_pipeline_new ("GstSqueezePlayer_Pipeline");

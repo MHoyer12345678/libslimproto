@@ -41,16 +41,16 @@ public:
 	virtual const char *GetGstAudioSinkElementType();
 };
 
-class GstPlayerAlsaSinkConfig : public IGstPlayerConfig
+class IGstPlayerAlsaSinkConfig : public IGstPlayerConfig
 {
 public:
-	virtual ~GstPlayerAlsaSinkConfig() {};
+	virtual ~IGstPlayerAlsaSinkConfig() {};
 
 	virtual const char *GetGstAudioSinkElementType();
 
 	virtual void DoConfigureSinkElement(GstElement *sinkElement);
 
-	virtual const char *GetAlsaDeviceName()=0;
+	virtual const char *GetPlayerAlsaDeviceName()=0;
 };
 
 }; /* namespace squeezeclient */

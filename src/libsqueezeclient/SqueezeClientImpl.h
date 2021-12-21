@@ -12,29 +12,29 @@
 
 #include "PlayerController.h"
 
+#include "IVolumeControl.h"
+
 namespace squeezeclient {
+
+#define __BUILDER_FLAG_RESET		0x00
+#define BUILDER_FLAG_DELETE_PLAYER	0x01
+#define BUILDER_FLAG_DELETE_VOLCTRL	0x02
 
 class SqueezeClientImpl : public SqueezeClient {
 private:
 	IPlayer *player;
 
+	IVolumeControl *volCtrl;
+
 	PlayerController *controller;
 
-	bool freePlayerInstance;
-
-	SqueezeClientImpl(IEventInterface *evIFace, IPlayer *aPlayer, bool freePlayer);
-
-	virtual ~SqueezeClientImpl();
+	uint8_t builderFlags;
 
 public:
-	static SqueezeClient *NewWithGstPlayerCustomConfig(IEventInterface *evIFace,
-			IGstPlayerConfig *configuration);
+	SqueezeClientImpl(IEventInterface *evIFace, IClientConfiguration *clientConfig,
+			IPlayer *aPlayer, IVolumeControl *volCtrl, uint8_t builderFlags);
 
-	static SqueezeClient *NewWithGstPlayerDefaultConfig(IEventInterface *evIFace);
-
-	static SqueezeClient *NewWithCustomPlayer(IEventInterface *evIFace, IPlayer *player);
-
-	static void Destroy(SqueezeClientImpl *client);
+	virtual ~SqueezeClientImpl();
 
 	virtual bool Init();
 

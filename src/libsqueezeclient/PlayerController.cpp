@@ -29,10 +29,13 @@
 using CppAppUtils::Logger;
 using namespace squeezeclient;
 
-PlayerController::PlayerController(SqueezeClient::IEventInterface *evIFace, IPlayer *aPlayer) :
+PlayerController::PlayerController(SqueezeClient::IEventInterface *evIFace,
+		SqueezeClient::IClientConfiguration *sclConfig, IPlayer *aPlayer, IVolumeControl *volCtrl) :
 		player(aPlayer),
+		volCtrl(volCtrl),
 		squeezeClientEventInterface(evIFace),
-		clientState(SqueezeClient::SqueezeClientStateT::POWERED_OFF)
+		clientState(SqueezeClient::SqueezeClientStateT::POWERED_OFF),
+		squeezeClientConfig(sclConfig)
 {
 	assert(aPlayer!=NULL);
 	memset(&this->lmsPlayerStatusData, 0, sizeof(IPlayer::PlayerStatusT));
@@ -121,8 +124,8 @@ void PlayerController::KickOff()
     this->lmsConnection->Connect();
 
     Logger::LogDebug("PlayerController::KickOff - Sending helo command.");
-    this->squeezeClientEventInterface->OnMACAddressRequested(macAdress);
-    this->squeezeClientEventInterface->OnUIDRequested(uid);
+    this->squeezeClientConfig->GetMACAddress(macAdress);
+    this->squeezeClientConfig->GetUID(uid);
 
    	if (!this->commandFactory->SendHeloCmd(macAdress, uid))
    	   	Logger::LogError("Failed to send helo command to server.");
@@ -317,6 +320,11 @@ void PlayerController::OnSrvRequestedVolumeChange(unsigned int volL,
     Logger::LogDebug("PlayerController::OnSrvRequestedVolumeChange - VolL: %d, VolR: %d, Apply locally: %s",
     		volL, volR, adjustLocally ? "true" : "false");
 
+    //if internal vol ctrl is enabled signal volume change to player
+    if (this->volCtrl!=NULL)
+    	this->volCtrl->SetVolume(volL, volR);
+
+    //inform outside anyway
     this->squeezeClientEventInterface->OnVolumeChanged(volL, volR);
 }
 

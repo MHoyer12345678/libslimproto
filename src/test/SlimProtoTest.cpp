@@ -7,6 +7,8 @@
 
 #include "SlimProtoTest.h"
 
+#include "SqueezeClientBuilder.h"
+
 #include <cpp-app-utils/Logger.h>
 #include <glib-unix.h>
 #include <linux/input.h>
@@ -22,14 +24,23 @@ SlimProtoTest::SlimProtoTest() :
 		returnCode(0),
 		keyEvents(NULL)
 {
+	SqueezeClientBuilder sclBuilder(this,this);
+
+	//select player
+//	sclBuilder.PlayerUseGstDefaultConf();
+	sclBuilder.PlayerUseGstCustomConf(this);
+
+	//select volume control
+	//sclBuilder.VolumeControlUseAlsa(const char *alsaDeviceName, const char *alsaMixerName);
+
+	this->squeezeClient=sclBuilder.CreateInstance();
+
 	this->mainloop=g_main_loop_new(NULL,FALSE);
-	//	this->squeezeClient=SqueezeClient::NewWithGstPlayerDefaultConfig(this);
-	this->squeezeClient=SqueezeClient::NewWithGstPlayerCustomConfig(this, this);
 }
 
 SlimProtoTest::~SlimProtoTest()
 {
-	SqueezeClient::Destroy(this->squeezeClient);
+	SqueezeClientBuilder::DestroyInstance(this->squeezeClient);
 	g_main_loop_unref (this->mainloop);
 }
 
@@ -155,13 +166,13 @@ void SlimProtoTest::OnPlayerNameRequested(char name[1024])
 	Logger::LogInfo("Client requested player name from us.");
 }
 
-void SlimProtoTest::OnUIDRequested(char uid[16])
+void SlimProtoTest::GetUID(char uid[16])
 {
 	memcpy(uid, "Dies ist eine id", 16);
 	Logger::LogInfo("Client requested uid from us.");
 }
 
-void SlimProtoTest::OnMACAddressRequested(uint8_t mac[6])
+void SlimProtoTest::GetMACAddress(uint8_t mac[6])
 {
 	uint8_t MAC_ADDRESS[6]={0x5C,0xE0, 0xC5, 0x49, 0x54, 0xAD};
 	memcpy(mac, MAC_ADDRESS,6);
@@ -183,8 +194,23 @@ void SlimProtoTest::OnVolumeChanged(unsigned int volL, unsigned int volR)
 	Logger::LogInfo("Server changed our volume: L=%u, R=%u", volL, volR);
 }
 
-const char* SlimProtoTest::GetAlsaDeviceName()
+bool SlimProtoTest::IsInternalVolumeCtrlEnabled()
+{
+	//enable player volume control in squeezeclient
+	return true;
+}
+
+const char* SlimProtoTest::GetPlayerAlsaDeviceName()
 {
 	return "pulse";
 }
 
+const char* SlimProtoTest::GetMixerAlsaDeviceName()
+{
+	return "pulse";
+}
+
+const char* SlimProtoTest::GetMixerAlsaMixerName()
+{
+	return "Master";
+}

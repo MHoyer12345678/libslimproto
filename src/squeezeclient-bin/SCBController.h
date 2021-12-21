@@ -73,10 +73,6 @@ public:
 	//------------------------ SqueezeClient::IEventInterface ------------------------
 	void OnPlayerNameRequested(char name[1024]);
 
-	void OnUIDRequested(char uid[16]);
-
-	void OnMACAddressRequested(uint8_t mac[6]);
-
 	void OnServerSetsNewPlayerName(const char *newName);
 
 	void OnClientStateChanged(SqueezeClient::SqueezeClientStateT newState);

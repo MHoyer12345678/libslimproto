@@ -4,9 +4,11 @@
  *  Created on: 01.12.2021
  *      Author: joe
  */
-#include "GstPlayerConfig.h"
+#include "IGstPlayerConfig.h"
 
 using namespace squeezeclient;
+
+#define ALSA_SINK_ELEMENT_TYPE		"alsasink"
 
 IGstPlayerConfig *GstPlayerDefaultConfig::instance=NULL;
 
@@ -24,12 +26,12 @@ IGstPlayerConfig* GstPlayerDefaultConfig::Instance()
 	return GstPlayerDefaultConfig::instance;
 }
 
-const char *GstPlayerAlsaSinkConfig::GetGstAudioSinkElementType()
+const char *IGstPlayerAlsaSinkConfig::GetGstAudioSinkElementType()
 {
-	return "alsasink";
+	return ALSA_SINK_ELEMENT_TYPE;
 }
 
-void GstPlayerAlsaSinkConfig::DoConfigureSinkElement(GstElement *sinkElement)
+void IGstPlayerAlsaSinkConfig::DoConfigureSinkElement(GstElement *sinkElement)
 {
-	g_object_set (G_OBJECT (sinkElement), "device", this->GetAlsaDeviceName(), NULL);
+	g_object_set (G_OBJECT (sinkElement), "device", this->GetPlayerAlsaDeviceName(), NULL);
 }

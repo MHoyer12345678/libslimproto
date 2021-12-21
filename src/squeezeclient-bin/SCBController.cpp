@@ -7,6 +7,7 @@
 
 #include "SCBController.h"
 
+#include "SqueezeClientBuilder.h"
 #include "cpp-app-utils/Logger.h"
 
 #define SCB_BUSNAME			"Squeeze.Client"
@@ -19,13 +20,18 @@ SCBController::SCBController(SCBConfig *config) :
 		dbusConId(0),
 		dbusConnection(NULL)
 {
+	SqueezeClientBuilder sueezeClientBuilder(this,config);
+
+	sueezeClientBuilder.PlayerUseGstCustomConf(config);
+	sueezeClientBuilder.VolumeControlUseAlsa(config);
+	this->squeezeClient=sueezeClientBuilder.CreateInstance();
+
 	this->dbusInterface=squeeze_client_control_skeleton_new();
-	this->squeezeClient=SqueezeClient::NewWithGstPlayerCustomConfig(this, config);
 }
 
 SCBController::~SCBController()
 {
-	SqueezeClient::Destroy(this->squeezeClient);
+	SqueezeClientBuilder::DestroyInstance(this->squeezeClient);
 	g_object_unref(this->dbusInterface);
 }
 
@@ -57,19 +63,6 @@ void SCBController::OnPlayerNameRequested(char name[1024])
 {
 	strncpy(name, "A test player2",1023);
 	Logger::LogInfo("Client requested player name from us.");
-}
-
-void SCBController::OnUIDRequested(char uid[16])
-{
-	memcpy(uid, "Dies ist eine id", 16);
-	Logger::LogInfo("Client requested uid from us.");
-}
-
-void SCBController::OnMACAddressRequested(uint8_t mac[6])
-{
-	uint8_t MAC_ADDRESS[6]={0x5C,0xE0, 0xC5, 0x49, 0x54, 0xAD};
-	memcpy(mac, MAC_ADDRESS,6);
-	Logger::LogInfo("Client requested mac address from us.");
 }
 
 void SCBController::OnServerSetsNewPlayerName(const char *newName)

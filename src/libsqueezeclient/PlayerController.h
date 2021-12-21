@@ -12,6 +12,7 @@
 #include "SqueezeClient.h"
 #include "CommandFactory.h"
 #include "IPlayer.h"
+#include "IVolumeControl.h"
 
 
 namespace squeezeclient {
@@ -24,6 +25,8 @@ private:
 
 	SqueezeClient::IEventInterface *squeezeClientEventInterface;
 
+	SqueezeClient::IClientConfiguration *squeezeClientConfig;
+
 	IPlayer::PlayerStatusT lmsPlayerStatusData;
 
 	LMSConnection *lmsConnection;
@@ -31,6 +34,8 @@ private:
 	CommandFactory *commandFactory;
 
 	IPlayer *player;
+
+	IVolumeControl *volCtrl;
 
 	void UpdatePlayerStatusData();
 
@@ -80,7 +85,8 @@ public:
 	virtual void OnSrvSetDisableDACSetting(bool value);
 
 public:
-	PlayerController(SqueezeClient::IEventInterface *evIFace, IPlayer *player);
+	PlayerController(SqueezeClient::IEventInterface *evIFace,
+			SqueezeClient::IClientConfiguration *squeezeClientConfig, IPlayer *player, IVolumeControl *volCtrl);
 
 	~PlayerController();
 

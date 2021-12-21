@@ -96,6 +96,7 @@ public:
 		 * Called on changed player state
 		 */
 		virtual void OnPlayerStateChanged(PlayerStateT state)=0;
+
 	};
 
 protected:
@@ -130,7 +131,6 @@ public:
 	virtual void SkipFrames(uint32_t skippingDuration)=0;
 
 	virtual PlayerStateT GetPlayerState();
-
 };
 
 } /* namespace squeezeclient */

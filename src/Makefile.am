@@ -5,23 +5,28 @@ bin_PROGRAMS=test-libsqueezeclient test-gstplayer squeezeclient
 noinst_LIBRARIES = libsqueezeclient.a
 
 libsqueezeclient_a_SOURCES = \
-	libsqueezeclient/Utils.cpp				\
-	libsqueezeclient/Utils.h				\
-	libsqueezeclient/PlayerController.cpp	\
-	libsqueezeclient/PlayerController.h		\
-	libsqueezeclient/LMSConnection.cpp		\
-	libsqueezeclient/LMSConnection.h		\
-	libsqueezeclient/CommandFactory.cpp		\
-	libsqueezeclient/CommandFactory.h		\
-	libsqueezeclient/SqueezeClientImpl.cpp	\
-	libsqueezeclient/SqueezeClientImpl.h	\
-	libsqueezeclient/SqueezeClient.cpp		\
-	include/SqueezeClient.h					\
-	player/IPlayer.cpp						\
-	player/GstPlayerConfig.cpp				\
-	player/GstPlayer.cpp					\
-	player/GstPlayer.h						\
-	include/IPlayer.h						\
+	libsqueezeclient/Utils.cpp					\
+	libsqueezeclient/Utils.h					\
+	libsqueezeclient/PlayerController.cpp		\
+	libsqueezeclient/PlayerController.h			\
+	libsqueezeclient/LMSConnection.cpp			\
+	libsqueezeclient/LMSConnection.h			\
+	libsqueezeclient/CommandFactory.cpp			\
+	libsqueezeclient/CommandFactory.h			\
+	libsqueezeclient/SqueezeClientImpl.cpp		\
+	libsqueezeclient/SqueezeClientImpl.h		\
+	libsqueezeclient/SqueezeClientBuilder.cpp	\
+	include/SqueezeClient.h						\
+	player/IPlayer.cpp							\
+	player/GstPlayerConfig.cpp					\
+	player/GstPlayer.cpp						\
+	player/GstPlayer.h							\
+	volcontrol/AlsaVolumeControl.cpp			\
+	volcontrol/AlsaVolumeControl.h				\
+	include/SqueezeClient.h						\
+	include/SqueezeClientBuilder.h				\
+	include/IPlayer.h							\
+	include/IVolumeControl.h					\
 	include/GstPlayerConfig.h				
 	
 
@@ -30,13 +35,14 @@ libsqueezeclient_a_CPPFLAGS  = \
 		-Ilib					\
 		-Iinclude				\
 		-Iplayer				\
-		-Isqueezeclient			\
+		-Ivolcontrol			\
 	   	$(GIO_LIBS_CFLAGS)		\
 	   	$(GIO_UNIX_CFLAGS)		\
 	   	$(GLIB_CFLAG)			\
 	   	$(GOBJECT_CFLAGS)		\
 	   	$(LIBSOUP_CFLAGS)		\
-		$(GSTREAMER_CFLAGS)
+		$(GSTREAMER_CFLAGS)		\
+		$(ALSA_CFLAGS)
 		
 squeezeclient_SOURCES = \
 	squeezeclient-bin/mainSqueezeClientBin.cpp							\
@@ -56,7 +62,8 @@ squeezeclient_CPPFLAGS = \
 	   	$(GLIB_CFLAG)			\
 		$(GSTREAMER_CFLAGS)		\
 	   	$(GOBJECT_CFLAGS)		\
-	   	$(LIBSOUP_CFLAGS)
+	   	$(LIBSOUP_CFLAGS)		\
+		$(ALSA_CFLAGS)
 
 squeezeclient_LDADD	  = \
 		libsqueezeclient.a		\
@@ -66,7 +73,8 @@ squeezeclient_LDADD	  = \
 		$(GLIB_LIBS)			\
 		$(GSTREAMER_LIBS)		\
 		$(GOBJECT_LIBS)			\
-		$(LIBSOUP_LIBS)
+		$(LIBSOUP_LIBS)			\
+		$(ALSA_LIBS)
 
 # List generated headers here to assert that they are available when built is started
 BUILT_SOURCES =  squeezeclient-bin/generated/SqueezeClientInteface.h
@@ -91,7 +99,9 @@ test_libsqueezeclient_CPPFLAGS = \
 	   	$(GLIB_CFLAG)			\
 		$(GSTREAMER_CFLAGS)		\
 	   	$(GOBJECT_CFLAGS)		\
-	   	$(LIBSOUP_CFLAGS)
+	   	$(LIBSOUP_CFLAGS)		\
+	   	$(ALSA_CFLAGS)
+	   	
 
 test_libsqueezeclient_LDADD	  = \
 		libsqueezeclient.a		\
@@ -101,9 +111,9 @@ test_libsqueezeclient_LDADD	  = \
 		$(GLIB_LIBS)			\
 		$(GSTREAMER_LIBS)		\
 		$(GOBJECT_LIBS)			\
-		$(LIBSOUP_LIBS)
-
-
+		$(LIBSOUP_LIBS)			\
+		$(ALSA_LIBS)
+		
 test_gstplayer_SOURCES =		\
 	test/mainGstPlayerTest.cpp	\
 	test/GstPlayerTest.cpp		\

@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 #include "IPlayer.h"
-#include "GstPlayerConfig.h"
+#include "IGstPlayerConfig.h"
 
 namespace squeezeclient {
 

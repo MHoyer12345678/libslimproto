@@ -13,44 +13,42 @@
 
 using namespace squeezeclient;
 
-SqueezeClientImpl::SqueezeClientImpl(IEventInterface *evIFace,
-			IPlayer *aPlayer, bool freePlayer) :
+const char* SqueezeClient::CLIENT_STATE_NAMES[]=
+		{
+				"__NOT_SET",
+				IPlayer::PLAYER_STATE_NAMES[IPlayer::PlayerStateT::STOPPED],
+				IPlayer::PLAYER_STATE_NAMES[IPlayer::PlayerStateT::PLAYING],
+				IPlayer::PLAYER_STATE_NAMES[IPlayer::PlayerStateT::PAUSED],
+				"POWERED_OFF"
+		};
+
+SqueezeClientImpl::SqueezeClientImpl(IEventInterface *evIFace, IClientConfiguration *clientConfig,
+		IPlayer *aPlayer, IVolumeControl *volCtrl, uint8_t builderFlags) :
 		player(aPlayer),
-		freePlayerInstance(freePlayer)
+		volCtrl(volCtrl),
+		builderFlags(builderFlags)
 {
-	this->controller=new PlayerController(evIFace, this->player);
+	this->controller=new PlayerController(evIFace, clientConfig, this->player, this->volCtrl);
 }
 
 SqueezeClientImpl::~SqueezeClientImpl()
 {
 	delete this->controller;
 
-	if (this->freePlayerInstance)
+	if ((this->builderFlags & BUILDER_FLAG_DELETE_PLAYER)!=0)
 		delete this->player;
-}
-
-SqueezeClient *SqueezeClientImpl::NewWithGstPlayerCustomConfig(IEventInterface *evIFace,
-		IGstPlayerConfig *configuration)
-{
-	IPlayer *player=new GstPlayer(configuration);
-	return new SqueezeClientImpl(evIFace, player, true);
-}
-
-SqueezeClient *SqueezeClientImpl::NewWithGstPlayerDefaultConfig(IEventInterface *evIFace)
-{
-	return SqueezeClientImpl::NewWithGstPlayerCustomConfig(evIFace,
-			GstPlayerDefaultConfig::Instance());
-}
-
-SqueezeClient *SqueezeClientImpl::NewWithCustomPlayer(IEventInterface *evIFace, IPlayer *player)
-{
-	return new SqueezeClientImpl(evIFace, player, false);
+	if (this->volCtrl!=NULL &&(this->builderFlags & BUILDER_FLAG_DELETE_VOLCTRL)!=0)
+		delete this->volCtrl;
 }
 
 bool SqueezeClientImpl::Init()
 {
 	if (!this->player->Init())
 		return false;
+
+	if (this->volCtrl!=NULL)
+		if (!this->volCtrl->Init())
+			return false;
 
 	if (!this->controller->Init())
 		return false;
@@ -60,6 +58,8 @@ bool SqueezeClientImpl::Init()
 
 void SqueezeClientImpl::DeInit()
 {
+	if (this->volCtrl!=NULL)
+		this->volCtrl->DeInit();
 	this->player->DeInit();
 	this->controller->DeInit();
 }
@@ -97,11 +97,6 @@ void SqueezeClientImpl::SignalPreviousButtonPressed()
 void SqueezeClientImpl::SignalVolUpButtonPressed()
 {
 	this->controller->SignalVolUpButtonPressed();
-}
-
-void SqueezeClientImpl::Destroy(SqueezeClientImpl *client)
-{
-	delete client;
 }
 
 void SqueezeClientImpl::SignalVolDownButtonPressed()

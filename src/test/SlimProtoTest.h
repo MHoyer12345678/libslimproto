@@ -12,11 +12,13 @@
 
 #include "SqueezeClient.h"
 
-#include "GstPlayerConfig.h"
+#include "IGstPlayerConfig.h"
+#include "IAlsaVolumeControlConfig.h"
 
 namespace squeezeclient {
 
-class SlimProtoTest : public SqueezeClient::IEventInterface, GstPlayerAlsaSinkConfig {
+class SlimProtoTest : public SqueezeClient::IEventInterface, SqueezeClient::IClientConfiguration,
+	IGstPlayerAlsaSinkConfig, IAlsaVolumeControlConfig {
 private:
 
 	GIOChannel *keyEvents;
@@ -51,11 +53,16 @@ public:
 
 	int GetReturnCode();
 
+	//-------------- SqueezeClient::IClientConfiguration -----------------------------
+
+	void GetUID(char uid[16]);
+
+	void GetMACAddress(uint8_t mac[6]);
+
+	bool IsInternalVolumeCtrlEnabled();
+
+	//-------------- SqueezeClient::IEventInterface ----------------------------------
 	void OnPlayerNameRequested(char name[1024]);
-
-	void OnUIDRequested(char uid[16]);
-
-	void OnMACAddressRequested(uint8_t mac[6]);
 
 	void OnServerSetsNewPlayerName(const char *newName);
 
@@ -63,7 +70,13 @@ public:
 
 	void OnVolumeChanged(unsigned int volL, unsigned int volR);
 
-	const char *GetAlsaDeviceName();
+	//-------------- IGstPlayerAlsaSinkConfig ----------------------------------------
+	const char *GetPlayerAlsaDeviceName();
+
+	//-------------- IAlsaVolumeControlConfig ----------------------------------------
+	const char *GetMixerAlsaDeviceName();
+
+	const char *GetMixerAlsaMixerName();
 };
 
 } /* namespace squeezeclient */
