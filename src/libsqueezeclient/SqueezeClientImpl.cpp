@@ -28,7 +28,7 @@ SqueezeClientImpl::SqueezeClientImpl(IEventInterface *evIFace, IClientConfigurat
 		volCtrl(volCtrl),
 		builderFlags(builderFlags)
 {
-	this->controller=new PlayerController(evIFace, clientConfig, this->player, this->volCtrl);
+	this->controller=new ClientController(evIFace, clientConfig, this->player, this->volCtrl);
 }
 
 SqueezeClientImpl::~SqueezeClientImpl()

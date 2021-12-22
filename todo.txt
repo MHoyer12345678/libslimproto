@@ -1,7 +1,11 @@
-
+//Connection concept
+- resolve ip address from name
+- Connection concept
+  * reconnect/autoreconnect
+- Auto server discovery
+- Take care for autostart and different start modi (more than one strms possible??)
 
 //squeezeclientbin
-- volume controll configurable (mixer vs. extern)
 - "mute ramp off" possible via CAPs ? Does it help further?
 
 //Issues
@@ -16,13 +20,6 @@
 //packageing
 - make a shared lib from currently static one
 - create debianization
-
-//Connection concept
-- resolve ip address from name
-- Connection concept
-  * reconnect/autoreconnect
-- Auto server discovery
-- Take care for autostart and different start modi (more than one strms possible??)
 
 //Extended testing
 - fully test sync play use case (next / stop / pause / ...)

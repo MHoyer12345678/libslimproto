@@ -8,9 +8,8 @@
 #ifndef SRC_SQUEEZECLIENT_SQUEEZECLIENTIMPL_H_
 #define SRC_SQUEEZECLIENT_SQUEEZECLIENTIMPL_H_
 
+#include "ClientController.h"
 #include "SqueezeClient.h"
-
-#include "PlayerController.h"
 
 #include "IVolumeControl.h"
 
@@ -26,7 +25,7 @@ private:
 
 	IVolumeControl *volCtrl;
 
-	PlayerController *controller;
+	ClientController *controller;
 
 	uint8_t builderFlags;
 

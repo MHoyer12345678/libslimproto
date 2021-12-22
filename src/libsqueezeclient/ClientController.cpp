@@ -5,10 +5,9 @@
  *      Author: joe
  */
 
-#include "PlayerController.h"
-
 #include <netinet/in.h>
 #include <assert.h>
+#include <libsqueezeclient/ClientController.h>
 
 #include "cpp-app-utils/Logger.h"
 #include "CommandFactory.h"
@@ -29,7 +28,7 @@
 using CppAppUtils::Logger;
 using namespace squeezeclient;
 
-PlayerController::PlayerController(SqueezeClient::IEventInterface *evIFace,
+ClientController::ClientController(SqueezeClient::IEventInterface *evIFace,
 		SqueezeClient::IClientConfiguration *sclConfig, IPlayer *aPlayer, IVolumeControl *volCtrl) :
 		player(aPlayer),
 		volCtrl(volCtrl),
@@ -44,13 +43,13 @@ PlayerController::PlayerController(SqueezeClient::IEventInterface *evIFace,
 	aPlayer->SetPlayerEventListener(this);
 }
 
-PlayerController::~PlayerController()
+ClientController::~ClientController()
 {
 	delete this->commandFactory;
 	delete this->lmsConnection;
 }
 
-bool PlayerController::Init()
+bool ClientController::Init()
 {
 	clientState=SqueezeClient::SqueezeClientStateT::POWERED_OFF;
 
@@ -60,7 +59,7 @@ bool PlayerController::Init()
     return true;
 }
 
-void PlayerController::DeInit()
+void ClientController::DeInit()
 {
 	if (this->lmsConnection->IsConnected())
 	{
@@ -72,23 +71,23 @@ void PlayerController::DeInit()
     clientState=SqueezeClient::SqueezeClientStateT::POWERED_OFF;
 }
 
-void PlayerController::OnConnectionEstablished()
+void ClientController::OnConnectionEstablished()
 {
     Logger::LogDebug("PlayerController::OnConnectionEstablished - Got informed about connection to server established.");
 }
 
-void PlayerController::OnConnectionLost(bool isClosedByClient)
+void ClientController::OnConnectionLost(bool isClosedByClient)
 {
     Logger::LogDebug("PlayerController::OnConnectionLost - Got informed about"
     		" connection to server closed by %s.", isClosedByClient ? "client" : "server");
 }
 
-void PlayerController::OnCommandReceived(void *data, uint16_t cmdSize)
+void ClientController::OnCommandReceived(void *data, uint16_t cmdSize)
 {
 	this->commandFactory->DoProcessReceivedCommand(data, cmdSize);
 }
 
-void PlayerController::OnConnectionResponseReceived(const char *responseStr)
+void ClientController::OnConnectionResponseReceived(const char *responseStr)
 {
     Logger::LogDebug("PlayerController::OnConnectionResponseReceived - Received connection response string from player.");
 	if (!this->lmsConnection->IsConnected())
@@ -101,19 +100,19 @@ void PlayerController::OnConnectionResponseReceived(const char *responseStr)
 
 }
 
-void PlayerController::OnReadyToPlay()
+void ClientController::OnReadyToPlay()
 {
     Logger::LogDebug("PlayerController::OnReadyToPlay - Player informed us about being ready to play.");
 	this->commandFactory->SendSTMlCmd(&this->lmsPlayerStatusData);
 }
 
-void PlayerController::OnTrackEnded()
+void ClientController::OnTrackEnded()
 {
     Logger::LogDebug("PlayerController::OnReadyToPlay - Player informed us about an ended track.");
 	this->commandFactory->SendSTMdCmd(&this->lmsPlayerStatusData);
 }
 
-void PlayerController::KickOff()
+void ClientController::KickOff()
 {
 	uint8_t macAdress[6];
 	char uid[16];
@@ -131,7 +130,7 @@ void PlayerController::KickOff()
    	   	Logger::LogError("Failed to send helo command to server.");
 }
 
-void PlayerController::SignalPowerButtonPressed(SqueezeClient::PowerSignalT powerSignal)
+void ClientController::SignalPowerButtonPressed(SqueezeClient::PowerSignalT powerSignal)
 {
     Logger::LogDebug("PlayerController::SignalPowerButtonPressed - Power button pressed.");
     switch(powerSignal)
@@ -147,62 +146,62 @@ void PlayerController::SignalPowerButtonPressed(SqueezeClient::PowerSignalT powe
     }
 }
 
-void PlayerController::SignalPlayButtonPressed()
+void ClientController::SignalPlayButtonPressed()
 {
     Logger::LogDebug("PlayerController::SignalPlayButtonPressed - Play button pressed.");
     if (this->clientState!=SqueezeClient::SqueezeClientStateT::PLAYING)
     	this->commandFactory->SendIRCmd(IR_CMD_PLAY);
 }
 
-void PlayerController::SignalPauseButtonPressed()
+void ClientController::SignalPauseButtonPressed()
 {
     Logger::LogDebug("PlayerController::SignalPauseButtonPressed - Pause button pressed.");
     this->commandFactory->SendIRCmd(IR_CMD_PAUSE);
 }
 
-void PlayerController::SignalNextButtonPressed()
+void ClientController::SignalNextButtonPressed()
 {
     Logger::LogDebug("PlayerController::SignalNextButtonPressed - Next button pressed.");
     this->commandFactory->SendIRCmd(IR_CMD_NEXT);
 }
 
-void PlayerController::SignalPreviousButtonPressed()
+void ClientController::SignalPreviousButtonPressed()
 {
     Logger::LogDebug("PlayerController::SignalPreviousButtonPressed - Previous button pressed.");
     this->commandFactory->SendIRCmd(IR_CMD_PREV);
 }
 
-void PlayerController::SignalVolUpButtonPressed()
+void ClientController::SignalVolUpButtonPressed()
 {
     Logger::LogDebug("PlayerController::SignalVolUpButtonPressed - Volup button pressed.");
     this->commandFactory->SendIRCmd(IR_CMD_VOLUP);
 }
 
-void PlayerController::SignalVolDownButtonPressed()
+void ClientController::SignalVolDownButtonPressed()
 {
     Logger::LogDebug("PlayerController::SignalVolDownButtonPressed - VolDown button pressed.");
     this->commandFactory->SendIRCmd(IR_CMD_VOLDOWN);
 }
 
-void PlayerController::SignalMuteButtonPressed()
+void ClientController::SignalMuteButtonPressed()
 {
     Logger::LogDebug("PlayerController::SignalMuteButtonPressed - Mute button pressed.");
     this->commandFactory->SendIRCmd(IR_CMD_MUTE);
 }
 
-void PlayerController::UpdatePlayerStatusData()
+void ClientController::UpdatePlayerStatusData()
 {
     Logger::LogDebug("PlayerController::UpdatePlayerStatusData - Updating player status data structure.");
     this->player->UpdatePlayerStatus(&this->lmsPlayerStatusData);
 }
 
-void PlayerController::OnSrvRequestedPlayerStatus(uint32_t replayGain)
+void ClientController::OnSrvRequestedPlayerStatus(uint32_t replayGain)
 {
 	this->UpdatePlayerStatusData();
 	this->commandFactory->SendSTMtCmd(&this->lmsPlayerStatusData, replayGain);
 }
 
-void PlayerController::OnSrvRequestedPause(uint32_t pauseDuration)
+void ClientController::OnSrvRequestedPause(uint32_t pauseDuration)
 {
 	if (pauseDuration==0)
 	{
@@ -220,14 +219,14 @@ void PlayerController::OnSrvRequestedPause(uint32_t pauseDuration)
 	}
 }
 
-void PlayerController::OnSrvRequestedStop()
+void ClientController::OnSrvRequestedStop()
 {
 	this->player->Stop();
 	this->UpdatePlayerStatusData();
 	this->commandFactory->SendSTMfCmd(&this->lmsPlayerStatusData);
 }
 
-void PlayerController::OnSrvRequestedUnPause(uint32_t unpauseTime)
+void ClientController::OnSrvRequestedUnPause(uint32_t unpauseTime)
 {
 	if (unpauseTime==0)
 	{
@@ -248,18 +247,18 @@ void PlayerController::OnSrvRequestedUnPause(uint32_t unpauseTime)
 	}
 }
 
-void PlayerController::OnSrvRequestedSkippingFrames(uint32_t skippingDuration)
+void ClientController::OnSrvRequestedSkippingFrames(uint32_t skippingDuration)
 {
 	Logger::LogDebug("PlayerController::OnSrvRequestedSkippingFrames - Server asks us to skip %u ms.", skippingDuration);
 	this->player->SkipFrames(skippingDuration);
 }
 
-void PlayerController::OnSrvRequestedFlush()
+void ClientController::OnSrvRequestedFlush()
 {
 	Logger::LogError("Server asks us to flush. Not yet implemented.");
 }
 
-void PlayerController::OnSrvRequestedPlayerName()
+void ClientController::OnSrvRequestedPlayerName()
 {
 	char name[1024];
 	this->squeezeClientEventInterface->OnPlayerNameRequested(name);
@@ -267,7 +266,7 @@ void PlayerController::OnSrvRequestedPlayerName()
 	this->commandFactory->SendPlayerName(name);
 }
 
-void PlayerController::OnSrvSetNewPlayerName(const char *playerName)
+void ClientController::OnSrvSetNewPlayerName(const char *playerName)
 {
     Logger::LogDebug("PlayerController::OnSrvProvidedNewPlayerName - Server send us a new player name: %s", playerName);
 	// sending playername back to confirm reception
@@ -275,7 +274,7 @@ void PlayerController::OnSrvSetNewPlayerName(const char *playerName)
     this->squeezeClientEventInterface->OnServerSetsNewPlayerName(playerName);
 }
 
-void PlayerController::OnSrvRequestedAudioEnabledChange(bool spdiffEnabled,
+void ClientController::OnSrvRequestedAudioEnabledChange(bool spdiffEnabled,
 		bool dacEnabled)
 {
     Logger::LogDebug("PlayerController::OnSrvRequestedAudioEnabledChange - SPDIFF: %s, DAC: %s.",
@@ -298,7 +297,7 @@ void PlayerController::OnSrvRequestedAudioEnabledChange(bool spdiffEnabled,
     this->squeezeClientEventInterface->OnClientStateChanged(this->clientState);
 }
 
-void PlayerController::OnSrvRequestedDisableDACSetting()
+void ClientController::OnSrvRequestedDisableDACSetting()
 {
 	bool value=false;
     Logger::LogDebug("PlayerController::OnSrvRequestedDisableDACSetting - Server asked us to send the status of the \'DisableDAC\' setting. Sending back '%d'.", value);
@@ -307,14 +306,14 @@ void PlayerController::OnSrvRequestedDisableDACSetting()
 	this->commandFactory->SendDisableDACSetting(value);
 }
 
-void PlayerController::OnSrvSetDisableDACSetting(bool value)
+void ClientController::OnSrvSetDisableDACSetting(bool value)
 {
     Logger::LogDebug("PlayerController::OnSrvSetDisableDACSetting - Server updated \'DisableDAC\' setting. New value: %s.", value ? "true" : "false");
 	this->commandFactory->SendDisableDACSetting(value);
 }
 
 
-void PlayerController::OnSrvRequestedVolumeChange(unsigned int volL,
+void ClientController::OnSrvRequestedVolumeChange(unsigned int volL,
 		unsigned int volR, bool adjustLocally)
 {
     Logger::LogDebug("PlayerController::OnSrvRequestedVolumeChange - VolL: %d, VolR: %d, Apply locally: %s",
@@ -328,7 +327,7 @@ void PlayerController::OnSrvRequestedVolumeChange(unsigned int volL,
     this->squeezeClientEventInterface->OnVolumeChanged(volL, volR);
 }
 
-void PlayerController::OnSrvRequestedLoadStream(
+void ClientController::OnSrvRequestedLoadStream(
 		IPlayer::StreamingServerInfoT *srvInfo, IPlayer::AudioFormatT *audioFMT,
 		bool autostart)
 {
@@ -343,7 +342,7 @@ void PlayerController::OnSrvRequestedLoadStream(
 	this->commandFactory->SendSTMsCmd(&this->lmsPlayerStatusData);
 }
 
-void PlayerController::OnPlayerStateChanged(
+void ClientController::OnPlayerStateChanged(
 		IPlayer::PlayerStateT state)
 {
     Logger::LogInfo("Player changed to state: %s",IPlayer::PLAYER_STATE_NAMES[state]);
@@ -356,20 +355,20 @@ void PlayerController::OnPlayerStateChanged(
     }
 }
 
-SqueezeClient::SqueezeClientStateT PlayerController::GetClientState()
+SqueezeClient::SqueezeClientStateT ClientController::GetClientState()
 {
 	return this->clientState;
 }
 
 #warning following functions away later
 
-void PlayerController::SignalFakeFaster()
+void ClientController::SignalFakeFaster()
 {
 	//add 10ms on playtime
     Logger::LogDebug("PlayerController::SignalFakeFaster - Not yet implemented.");
 }
 
-void PlayerController::SignalFakeSlower()
+void ClientController::SignalFakeSlower()
 {
 	//sub 10ms on playtime
     Logger::LogDebug("PlayerController::SignalFakeSlower - Pausing for 50ms to simulate to be slower.");

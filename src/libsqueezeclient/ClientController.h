@@ -17,7 +17,7 @@
 
 namespace squeezeclient {
 
-class PlayerController : public LMSConnection::IConnectionListener,
+class ClientController : public LMSConnection::IConnectionListener,
 	public CommandFactory::IServerCmdListener, public IPlayer::IPlayerEventListener
 {
 private:
@@ -85,10 +85,10 @@ public:
 	virtual void OnSrvSetDisableDACSetting(bool value);
 
 public:
-	PlayerController(SqueezeClient::IEventInterface *evIFace,
+	ClientController(SqueezeClient::IEventInterface *evIFace,
 			SqueezeClient::IClientConfiguration *squeezeClientConfig, IPlayer *player, IVolumeControl *volCtrl);
 
-	~PlayerController();
+	~ClientController();
 
 	bool Init();
 

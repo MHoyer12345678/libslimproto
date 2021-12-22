@@ -63,6 +63,7 @@ void LMSConnection::DeInit()
 
 bool LMSConnection::Connect()
 {
+#warning: TODOs here ..
 	//TODO:
 	//- configure ip address and port
 	//- resolve ip address if name

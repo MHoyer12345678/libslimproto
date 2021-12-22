@@ -7,8 +7,8 @@ noinst_LIBRARIES = libsqueezeclient.a
 libsqueezeclient_a_SOURCES = \
 	libsqueezeclient/Utils.cpp					\
 	libsqueezeclient/Utils.h					\
-	libsqueezeclient/PlayerController.cpp		\
-	libsqueezeclient/PlayerController.h			\
+	libsqueezeclient/ClientController.cpp		\
+	libsqueezeclient/ClientController.h			\
 	libsqueezeclient/LMSConnection.cpp			\
 	libsqueezeclient/LMSConnection.h			\
 	libsqueezeclient/CommandFactory.cpp			\
