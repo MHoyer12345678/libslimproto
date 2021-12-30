@@ -15,12 +15,16 @@
 #include <glib.h>
 #include <stdint.h>
 #include <assert.h>
+#include <netdb.h>
+#include <errno.h>
 
 #include <cpp-app-utils/Logger.h>
 
 #include "CommandFactory.h"
 
-#define MAX_CMD_SIZE 8096
+#define MAX_CMD_SIZE 		8096
+
+#define LMS_DISCOVERY_PORT	3483
 
 using CppAppUtils::Logger;
 
@@ -38,99 +42,82 @@ typedef struct SrvCmdBaseT
 
 
 LMSConnection::LMSConnection(IConnectionListener *listener) :
-		connectionSocket(-1),
 		connectionListener(listener),
-		serverIp(0)
+		serverIp(0),
+		state(StateT::__NOT_SET),
+		sclConfig(NULL)
 {
+	this->discoveryConnection.socket=-1;
+	this->discoveryConnection.gEventId=0;
+	this->lmsConnection.socket=-1;
+	this->lmsConnection.gEventId=0;
+
 }
 
 LMSConnection::~LMSConnection()
 {
 }
 
-bool LMSConnection::Init()
+bool LMSConnection::Init(SqueezeClient::IClientConfiguration *sclConfig)
 {
 	Logger::LogDebug("LMSConnection::Init - Initalizing LMSConnection.");
+	this->state=StateT::DISCONNECTED;
+	this->sclConfig=sclConfig;
 	return true;
 }
 
 void LMSConnection::DeInit()
 {
-	Logger::LogDebug("SlimProtoTest::DeInit - DeInitalizing LMS connection.");
+	Logger::LogDebug("LMSConnection::DeInit - DeInitalizing LMS connection.");
 	if (this->IsConnected())
 		this->Disconnect();
+	this->state=StateT::__NOT_SET;
+	this->sclConfig=NULL;
 }
 
-bool LMSConnection::Connect()
+
+void LMSConnection::StartConnecting()
 {
-#warning: TODOs here ..
-	//TODO:
-	//- configure ip address and port
-	//- resolve ip address if name
+	assert(this->state!=__NOT_SET);
 
-	struct sockaddr_in server;
-	int aSocket;
+	if (this->state!=StateT::DISCONNECTED && this->state!=StateT::FAILED_CONNECTING)
+		return;
 
-	if (this->IsConnected())
-		this->Disconnect();
-
-	Logger::LogDebug("LMSConnection::Connect - Connecting to LMS");
-
-	aSocket=socket(AF_INET , SOCK_STREAM , 0);
-
-	if (aSocket == -1)
+	if (this->sclConfig->GetServerAddress()!=NULL)
 	{
-		Logger::LogError("Unable to create INET socket: %s", strerror(errno));
-		return false;
+		Logger::LogDebug("LMSConnection::StartConnecting - LMS server found in configuration file. Trying to connect to it.");
+		this->EnterConnectingConfiguredLMS();
 	}
-
-	this->serverIp=inet_addr("192.168.178.29");
-	server.sin_addr.s_addr = this->serverIp;
-	server.sin_family = AF_INET;
-	server.sin_port = htons(3483);
-
-		//Connect to remote server
-	if (connect(aSocket, (struct sockaddr *)&server , sizeof(server)) < 0)
+	else
 	{
-		Logger::LogError("Unable connect to server: %s", strerror(errno));
-		close(aSocket);
-		return false;
-	}
-
-	g_unix_fd_add(aSocket,G_IO_IN,LMSConnection::OnDataReceived,this);
-
-	if (fcntl(aSocket, F_SETFL, fcntl(aSocket, F_GETFL, 0) | O_NONBLOCK))
-	{
-		Logger::LogError("Unable to set connection socket to non blocking: %s", strerror(errno));
-		close(aSocket);
-		return false;
-	}
-
-	this->connectionSocket=aSocket;
-
-	Logger::LogDebug("SlimProtoTest::Connect - Connected with LMS");
-
-	if (this->connectionListener!=NULL)
-		this->connectionListener->OnConnectionEstablished();
-
-	return true;
-}
-
-void LMSConnection::DoDisconnect(bool isInitiatedByClient)
-{
-	Logger::LogDebug("SlimProtoTest::DoDisconnect - Disconnecting from LMS");
-	if (this->connectionSocket!=-1)
-	{
-		close(this->connectionSocket);
-		this->connectionSocket=-1;
-		if (this->connectionListener!=NULL)
-			this->connectionListener->OnConnectionLost(isInitiatedByClient);
+		Logger::LogDebug("LMSConnection::StartConnecting - Auto discovery of LMS server requested.");
+		this->EnterConnectingDiscoveredLMS();
 	}
 }
 
 void LMSConnection::Disconnect()
 {
-	this->DoDisconnect(true);
+	int retryTimeoutMS;
+
+	if (this->state==StateT::DISCONNECTED || this->state==StateT::__NOT_SET)
+		return;
+
+	if (this->connectionListener!=NULL)
+			this->connectionListener->OnServerConnectionLost(retryTimeoutMS, SqueezeClient::MANUAL_DISCONNECT);
+
+	this->EnterDisconnected();
+
+	//ignoring retryTimeoutMS -> no automatic reconnect on explicit disconnect call
+}
+
+bool LMSConnection::IsConnected()
+{
+	return this->state==StateT::CONNECTED;
+}
+
+in_addr_t LMSConnection::GetServerIp()
+{
+	return this->serverIp;
 }
 
 bool LMSConnection::SendCmd(void *data, int size)
@@ -138,10 +125,10 @@ bool LMSConnection::SendCmd(void *data, int size)
 	if (!this->IsConnected())
 		return false;
 
-	if (write(this->connectionSocket,data,size)!=size)
+	if (write(this->lmsConnection.socket,data,size)!=size)
 	{
 		Logger::LogError("Unable to write %d bytes of data. Closing connection.", size);
-		this->Disconnect();
+		this->EnterConnectionError(SqueezeClient::CONNECTION_RW_ERROR);
 		return false;
 	}
 
@@ -161,12 +148,12 @@ ssize_t LMSConnection::SafeReadNBytes(char *buffer, size_t bytes2Read)
 	char *dataPtr=buffer;
 	int retries=10;
 
-	assert(this->connectionSocket!=-1);
+	assert(this->lmsConnection.socket!=-1);
 
 	while(retries>0)
 	{
 		int br;
-		br=read(this->connectionSocket, dataPtr, bytes2Read);
+		br=read(this->lmsConnection.socket, dataPtr, bytes2Read);
 		if (br<=0)
 			return br;
 		bytesRead+=br;
@@ -189,13 +176,13 @@ bool LMSConnection::EvaluateReadResult(ssize_t result, size_t expectedSize)
 	if (result==0)
 	{
 		Logger::LogDebug("LMSConnection::EvaluateReadResult - Server closed connection.");
-		this->DoDisconnect(false);
+		this->EnterConnectionError(SqueezeClient::SERVER_CLOSED);
 		return false;
 	}
 	else if (result==-1)
 	{
 		Logger::LogError("Unable to read received data: %s. Closing connection.", strerror(errno));
-		this->DoDisconnect(false);
+		this->EnterConnectionError(SqueezeClient::CONNECTION_RW_ERROR);
 		return false;	}
 	else if (result!=expectedSize)
 	{
@@ -214,7 +201,7 @@ void LMSConnection::OnDataReceived()
 	SrvCmdBaseT *srvCmd;
 	uint16_t cmdSize;
 
-	if (this->connectionSocket==-1)
+	if (this->lmsConnection.socket==-1)
 		return;
 
 	bytesRead=this->SafeReadNBytes(buffer, sizeof(SrvCmdBaseT));
@@ -242,18 +229,277 @@ void LMSConnection::OnDataReceived()
 	//not all commands end with a string. Anyway, terminating all commands with '\0', buffer has size of MAX_CMD_SIZE+1 to ensure
 	//that one byte is left in any case
 	buffer[cmdSize+2]='\0';
+
 	if (this->connectionListener!=NULL)
 		this->connectionListener->OnCommandReceived(&srvCmd->cmd, cmdSize);
 }
 
-bool LMSConnection::IsConnected()
+void LMSConnection::CloseConnection(SocketConnection *conPtr)
 {
-	return this->connectionSocket!=-1;
+	if (conPtr->socket!=-1)
+	{
+		g_source_remove(conPtr->gEventId);
+		close(conPtr->socket);
+		conPtr->socket=-1;
+		conPtr->gEventId=0;
+	}
 }
 
-in_addr_t LMSConnection::GetServerIp()
+bool LMSConnection::SendDiscoveryMessage()
 {
-	return this->serverIp;
+	struct sockaddr_in d;
+	const char *buf;
+	int disc_sock = socket(AF_INET, SOCK_DGRAM, 0);
+	socklen_t enable = 1;
+	setsockopt(disc_sock, SOL_SOCKET, SO_BROADCAST, (const void *)&enable, sizeof(enable));
+	buf = "e";
+	memset(&d, 0, sizeof(d));
+	d.sin_family = AF_INET;
+	d.sin_port = htons(LMS_DISCOVERY_PORT);
+	d.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+
+	if (sendto(disc_sock, buf, 1, 0, (struct sockaddr *)&d, sizeof(d)) < 0)
+	{
+		Logger::LogError("Error sending discovery broadcast message.");
+		return false;
+	}
+
+	this->discoveryConnection.socket=disc_sock;
+	this->discoveryConnection.gEventId=g_unix_fd_add(disc_sock,G_IO_IN,LMSConnection::OnDiscoveryConnectionDataReceived,this);
+
+	return true;
+}
+
+gboolean LMSConnection::OnDiscoveryConnectionDataReceived(gint fd,
+		GIOCondition condition, gpointer userData)
+{
+	LMSConnection *instance=(LMSConnection *)userData;
+	instance->OnDiscoveryDataReceived();
+	return FALSE;
+}
+
+void LMSConnection::OnDiscoveryDataReceived()
+{
+	char readbuf[10];
+	struct sockaddr_in s;
+
+	socklen_t slen = sizeof(s);
+	if (this->discoveryConnection.socket==-1) return;
+
+	recvfrom(this->discoveryConnection.socket, readbuf, 10, 0, (struct sockaddr *)&s, &slen);
+	Logger::LogDebug("LMSConnection::OnDiscoveryDataReceived - Got response from: %s:%d", inet_ntoa(s.sin_addr), ntohs(s.sin_port));
+
+	close(this->discoveryConnection.socket);
+	g_source_remove(this->discoveryConnection.gEventId);
+
+	this->discoveryConnection.socket=-1;
+	this->discoveryConnection.gEventId=0;
+
+	if (this->ConnectToDiscoveredServer(s))
+		this->EnterConnected();
+	else
+		this->EnterFailedConnecting();
+}
+
+bool LMSConnection::FinalizeConnection(int aSocket, in_addr_t serverAddress)
+{
+    guint gEventId;
+
+	gEventId=g_unix_fd_add(aSocket,G_IO_IN,LMSConnection::OnDataReceived,this);
+
+	if (fcntl(aSocket, F_SETFL, fcntl(aSocket, F_GETFL, 0) | O_NONBLOCK))
+	{
+		Logger::LogError("Unable to set connection socket to non blocking: %s", strerror(errno));
+		close(aSocket);
+		return false;
+	}
+
+	this->lmsConnection.socket=aSocket;
+	this->lmsConnection.gEventId=gEventId;
+	this->serverIp=serverAddress;
+
+	Logger::LogDebug("LMSConnect::Connect - Connected to LMS. IP: %d.%d.%d.%d", this->serverIp & 0xFF,
+			(this->serverIp >> 8) & 0xFF, (this->serverIp >> 16) & 0xFF, (this->serverIp >> 24));
+
+	return true;
+}
+
+bool LMSConnection::ConnectToDiscoveredServer(struct sockaddr_in s)
+{
+    int aSocket;
+    in_addr	serverInAddr;
+
+	aSocket = socket(s.sin_family, SOCK_STREAM, 0);
+
+	if (aSocket == -1)
+	{
+		Logger::LogError("Unable to create socket for discovered server.");
+		return false;
+	}
+
+	if (connect(aSocket, (struct sockaddr *)&s, sizeof(s)) == -1)
+	{
+		Logger::LogError("Unable connect to server.");
+		close(aSocket);
+		return false;
+	}
+
+	return this->FinalizeConnection(aSocket, s.sin_addr.s_addr);
+}
+
+bool LMSConnection::ConnectToConfiguredServer()
+{
+	const char *server;
+	const char *port;
+
+	struct addrinfo hints;
+    struct addrinfo *result;
+    in_addr	serverInAddr;
+    int aSocket;
+    int ret;
+
+	server=this->sclConfig->GetServerAddress();
+	port=this->sclConfig->GetServerPort();
+
+	Logger::LogDebug("LMSConnection::Connect - Connecting to LMS. Server: %s:%s",server,port);
+
+    /* Obtain address(es) matching host/port. */
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;    /* LMS only supports IPv4 currently*/
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = 0;          /* Any protocol */
+
+    ret = getaddrinfo(server, port, &hints, &result);
+    if (ret != 0)
+    {
+    	Logger::LogError("Unable to resolve server address %s:%s: %s",
+    			server, port, gai_strerror(ret));
+    	return false;
+	}
+
+    /* getaddrinfo() returns a list of address structures.
+       Try each address until we successfully connect(2).
+       If socket(2) (or connect(2)) fails, we (close the socket
+       and) try the next address. */
+	for (struct addrinfo *rp = result; rp != NULL; rp = rp->ai_next)
+	{
+		struct sockaddr_in *inet_addr=(struct sockaddr_in *)rp->ai_addr;
+		Logger::LogDebug("LMSConnection::ConnectToConfiguredServer - Trying to connect to: %s:%d (family=%d, socktype=%d, protocol=%d)",
+				inet_ntoa(inet_addr->sin_addr), ntohs(inet_addr->sin_port), rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+
+		aSocket = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+		if (aSocket == -1)
+		   continue;
+
+		if (connect(aSocket, rp->ai_addr, rp->ai_addrlen) != -1)
+		{
+			serverInAddr=inet_addr->sin_addr;
+			break;                  /* Success */
+		}
+
+		Logger::LogInfo("Unable to connect to %s:%d: %s",
+				inet_ntoa(inet_addr->sin_addr), ntohs(inet_addr->sin_port), strerror(errno));
+
+		close(aSocket);
+		aSocket=-1;
+	}
+
+	freeaddrinfo(result);           /* No longer needed */
+
+	if (aSocket==-1)
+	{
+		Logger::LogError("Unable connect to server.");
+		return false;
+	}
+
+	return this->FinalizeConnection(aSocket, serverInAddr.s_addr);
+}
+
+void LMSConnection::EnterConnectingDiscoveredLMS()
+{
+	Logger::LogDebug("LMSConnection::EnterConnectingDiscoveredLMS - Try to discover and connect to LMS.");
+	assert(this->state==DISCONNECTED || this->state==FAILED_CONNECTING);
+	this->state=CONNECTING_DISCOVERED_LMS;
+	if (!this->SendDiscoveryMessage())
+		this->EnterFailedConnecting();
+}
+
+void LMSConnection::EnterConnectingConfiguredLMS()
+{
+	Logger::LogDebug("LMSConnection::EnterConnectingConfiguredLMS - Try to connect to configured LMS.");
+	assert(this->state==DISCONNECTED || this->state==FAILED_CONNECTING);
+	this->state=CONNECTING_CONFIGURED_LMS;
+	if (this->ConnectToConfiguredServer())
+		this->EnterConnected();
+	else
+		this->EnterFailedConnecting();
+}
+
+void LMSConnection::EnterConnected()
+{
+	Logger::LogDebug("LMSConnection::EnterConnected - Connection to LMS established.");
+	assert(this->state==CONNECTING_DISCOVERED_LMS || this->state==CONNECTING_CONFIGURED_LMS);
+	this->state=StateT::CONNECTED;
+
+	if (this->connectionListener!=NULL)
+		this->connectionListener->OnConnectionEstablished();
+}
+
+void LMSConnection::EnterDisconnected()
+{
+	Logger::LogDebug("LMSConnection::EnterDisconnected - Disconnected from LMS");
+
+	this->CloseConnection(&this->lmsConnection);
+	this->CloseConnection(&this->discoveryConnection);
+
+	this->state=StateT::DISCONNECTED;
+}
+
+void LMSConnection::EnterFailedConnecting()
+{
+	int retryTimeoutMS=RETRY_TIMEOUT_NO_RETRY;
+
+	Logger::LogDebug("LMSConnection::EnterFailedConnecting - Failed connecting to LMS.");
+	this->state=StateT::FAILED_CONNECTING;
+
+	if (this->connectionListener!=NULL)
+		this->connectionListener->OnConnectingServerFailed(retryTimeoutMS);
+
+	this->EnterDisconnected();
+	this->KickOffReconnect(retryTimeoutMS);
+}
+
+void LMSConnection::EnterConnectionError(SqueezeClient::ConnectLostReasonT reason)
+{
+	int retryTimeoutMS=RETRY_TIMEOUT_NO_RETRY;
+
+	Logger::LogDebug("LMSConnection::EnterConnectionError - Error on existing LMS connecting.");
+	this->state=StateT::CONNECTION_ERROR;
+
+	if (this->connectionListener!=NULL)
+		this->connectionListener->OnServerConnectionLost(retryTimeoutMS, reason);
+
+	this->EnterDisconnected();
+	this->KickOffReconnect(retryTimeoutMS);
+}
+
+gboolean LMSConnection::OnReconnectTimeoutElapsed(gpointer userData)
+{
+	LMSConnection *instance=(LMSConnection *)userData;
+	if (instance->state==DISCONNECTED)
+		instance->StartConnecting();
+	//just one timeout event needed
+	return FALSE;
+}
+
+void LMSConnection::KickOffReconnect(int retryTimeoutMS)
+{
+	if (retryTimeoutMS==RETRY_TIMEOUT_NO_RETRY)
+		return;
+	else if (retryTimeoutMS==RETRY_TIMEOUT_IMMEDIATE_RETRY)
+		this->StartConnecting();
+	else
+		g_timeout_add(retryTimeoutMS, LMSConnection::OnReconnectTimeoutElapsed, this);
 }
 
 } /* namespace squeezeclient */

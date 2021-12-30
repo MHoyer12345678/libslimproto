@@ -35,11 +35,13 @@ public:
 
 	virtual ~SqueezeClientImpl();
 
-	virtual bool Init();
+	virtual bool Init(bool autoConnectToServer);
 
 	virtual void DeInit();
 
-	virtual void KickOff();
+	virtual void StartConnectingServer();
+
+	virtual void DisconnectServer();
 
 	virtual void SignalPowerButtonPressed(PowerSignalT powerSignal);
 

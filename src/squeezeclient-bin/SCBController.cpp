@@ -38,7 +38,7 @@ SCBController::~SCBController()
 
 bool SCBController::Init()
 {
-	if (!this->squeezeClient->Init())
+	if (!this->squeezeClient->Init(false))
 		return false;
 
 	this->dbusConId =  g_bus_own_name(G_BUS_TYPE_SYSTEM,SCB_BUSNAME,
@@ -56,7 +56,7 @@ void SCBController::DeInit()
 
 void SCBController::KickOff()
 {
-    this->squeezeClient->KickOff();
+    this->squeezeClient->StartConnectingServer();
 }
 
 void SCBController::OnPlayerNameRequested(char name[1024])
@@ -192,6 +192,18 @@ void SCBController::OnVolumeChanged(unsigned int volL, unsigned int volR)
 	squeeze_client_control_set_volume_r(this->dbusInterface, volR);
 
 	squeeze_client_control_emit_volume_changed(this->dbusInterface);
+}
+
+void SCBController::OnConnectingServerFailed(int &retryTimeoutMS)
+{
+#warning connect to configuration file
+	retryTimeoutMS=1000;
+}
+
+void SCBController::OnServerConnectionLost(int &retryTimeoutMS, SqueezeClient::ConnectLostReasonT reason)
+{
+#warning connect to configuration file
+	retryTimeoutMS=100;
 }
 
 void SCBController::OnBusAcquired(GDBusConnection *pConnection,

@@ -35,6 +35,10 @@ private:
 
 	bool internalVolCtrlEnabled;
 
+	char *serverAddress;
+
+	char *serverPort;
+
 public:
 	static const char *Version;
 
@@ -63,6 +67,9 @@ public:
 
 	const char *GetCommand();
 
+	const char* GetServerAddress();
+
+	const char* GetServerPort();
 	//--------------------------------------- SqueezeClient::IClientConfiguration ---------------
 	void GetUID(char uid[16]);
 

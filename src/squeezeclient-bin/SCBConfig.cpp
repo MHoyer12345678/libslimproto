@@ -11,6 +11,9 @@
 
 using namespace squeezeclient;
 
+#define DEFAULT_SERVER_AUTODETECTION_TAG	"::auto::"
+
+
 #define DEFAULT_CONF_FILE	"/etc/squeezeclient/squeezeclient.conf"
 
 #define COMMAND			"sqeezeclient"
@@ -32,6 +35,12 @@ using namespace squeezeclient;
 #define CONFIG_TAG_INTERNAL_VOL			"EnableInternalVolumeCtrl"
 #define DEFAULT_INTERNAL_VOL			true
 
+#define CONFIG_TAG_SERVER_ADDRESS		"ServerAddress"
+#define DEFAULT_SERVER_ADDRESS			DEFAULT_SERVER_AUTODETECTION_TAG
+
+#define CONFIG_TAG_SERVER_PORT		"ServerPort"
+#define DEFAULT_SERVER_PORT			"3483"
+
 const char *SCBConfig::Version=VERSION;
 
 SCBConfig::SCBConfig() :
@@ -41,6 +50,8 @@ SCBConfig::SCBConfig() :
 	this->alsaMixerName=strdup(DEFAULT_ALSA_MIXER_NAME);
 	this->uid=strdup(DEFAULT_SCL_UID);
 	this->internalVolCtrlEnabled=DEFAULT_INTERNAL_VOL;
+	this->serverAddress=strdup(DEFAULT_SERVER_ADDRESS);
+	this->serverPort=strdup(DEFAULT_SERVER_PORT);
 }
 
 SCBConfig::~SCBConfig()
@@ -102,6 +113,30 @@ bool SCBConfig::ParseConfigFileItem(GKeyFile *confFile,
 			if (!Configuration::GetBooleanValueFromKey(confFile,key,group, &this->internalVolCtrlEnabled))
 				result=false;
 		}
+		else if (strcasecmp(key, CONFIG_TAG_SERVER_ADDRESS)==0)
+		{
+			char *serverAddress;
+			if (Configuration::GetStringValueFromKey(confFile,key,group, &serverAddress))
+			{
+				if (this->serverAddress!=NULL)
+					free(this->serverAddress);
+				this->serverAddress=serverAddress;
+			}
+			else
+				result=false;
+		}
+		else if (strcasecmp(key, CONFIG_TAG_SERVER_PORT)==0)
+		{
+			char *serverPort;
+			if (Configuration::GetStringValueFromKey(confFile,key,group, &serverPort))
+			{
+				if (this->serverPort!=NULL)
+					free(this->serverPort);
+				this->serverPort=serverPort;
+			}
+			else
+				result=false;
+		}
 	}
 
 	return result;
@@ -152,6 +187,21 @@ void SCBConfig::GetMACAddress(uint8_t mac[6])
 #warning connect to config file
 	uint8_t MAC_ADDRESS[6]={0x5C,0xE0, 0xC5, 0x49, 0x54, 0xAD};
 	memcpy(mac, MAC_ADDRESS,6);
+}
+
+const char* SCBConfig::GetServerAddress()
+{
+
+	//NULL is returned to indicate that the server is to be determined automatically
+	if (strcasecmp(this->serverAddress, DEFAULT_SERVER_AUTODETECTION_TAG)==0)
+		return NULL;
+	else
+		return this->serverAddress;
+}
+
+const char* SCBConfig::GetServerPort()
+{
+	return this->serverPort;
 }
 
 bool SCBConfig::IsInternalVolumeCtrlEnabled()

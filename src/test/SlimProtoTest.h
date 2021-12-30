@@ -61,6 +61,10 @@ public:
 
 	bool IsInternalVolumeCtrlEnabled();
 
+	const char* GetServerAddress();
+
+	const char* GetServerPort();
+
 	//-------------- SqueezeClient::IEventInterface ----------------------------------
 	void OnPlayerNameRequested(char name[1024]);
 
@@ -69,6 +73,10 @@ public:
 	void OnClientStateChanged(SqueezeClient::SqueezeClientStateT newState);
 
 	void OnVolumeChanged(unsigned int volL, unsigned int volR);
+
+	void OnConnectingServerFailed(int &retryTimeoutMS);
+
+	void OnServerConnectionLost(int &retryTimeoutMS, SqueezeClient::ConnectLostReasonT reason);
 
 	//-------------- IGstPlayerAlsaSinkConfig ----------------------------------------
 	const char *GetPlayerAlsaDeviceName();

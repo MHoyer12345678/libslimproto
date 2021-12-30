@@ -1,3 +1,7 @@
+//refactor
+- pass config elements to init to ensure that they are not used before init is called
+- remark: check if possible verywhere ..
+	
 //Connection concept
 - resolve ip address from name
 - Connection concept

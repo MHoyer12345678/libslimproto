@@ -12,6 +12,9 @@
 
 namespace squeezeclient {
 
+#define RETRY_TIMEOUT_NO_RETRY				-1
+#define RETRY_TIMEOUT_IMMEDIATE_RETRY		0
+
 class SqueezeClient {
 
 public:
@@ -19,11 +22,13 @@ public:
 
 	enum SqueezeClientStateT
 	{
-		__NOT_SET	= 0,
-		STOPPED		= IPlayer::PlayerStateT::STOPPED,
-		PLAYING		= IPlayer::PlayerStateT::PLAYING,
-		PAUSED		= IPlayer::PlayerStateT::PAUSED,
-		POWERED_OFF	= IPlayer::PlayerStateT::__NEXT_FREE,
+		__NOT_SET			= 0,
+		STOPPED				= IPlayer::PlayerStateT::STOPPED,
+		PLAYING				= IPlayer::PlayerStateT::PLAYING,
+		PAUSED				= IPlayer::PlayerStateT::PAUSED,
+		POWERED_OFF			= IPlayer::PlayerStateT::__NEXT_FREE,
+		SRV_DISCONNECTED	= POWERED_OFF+1,
+		SRV_CONNECTING		= SRV_DISCONNECTED+1,
 	};
 
 	class IClientConfiguration
@@ -35,9 +40,16 @@ public:
 
 		virtual void GetMACAddress(uint8_t  mac[6])=0;
 
-		/** TODO: missing
-		  * configure ip & port
-		  * */
+		virtual const char* GetServerAddress()=0;
+
+		virtual const char* GetServerPort()=0;
+	};
+
+	enum ConnectLostReasonT
+	{
+		MANUAL_DISCONNECT	= 0,
+		SERVER_CLOSED		= 1,
+		CONNECTION_RW_ERROR = 2
 	};
 
 	class IEventInterface
@@ -53,13 +65,17 @@ public:
 		virtual void OnClientStateChanged(SqueezeClientStateT newState)=0;
 
 		virtual void OnVolumeChanged(unsigned int volL, unsigned int volR)=0;
+
+		virtual void OnConnectingServerFailed(int &retryTimeoutMS)=0;
+
+		virtual void OnServerConnectionLost(int &retryTimeoutMS, ConnectLostReasonT reason)=0;
 	};
 
 	enum PowerSignalT
 	{
-		POWER_TOGGLE=0,
-		POWER_OFF	=1,
-		POWER_ON	=2
+		POWER_TOGGLE	= 0,
+		POWER_OFF		= 1,
+		POWER_ON		= 2
 	};
 
 	enum PauseResumeModeT
@@ -73,11 +89,13 @@ public:
 
 	virtual ~SqueezeClient() {};
 
-	virtual bool Init()=0;
+	virtual bool Init(bool autoConnectToServer)=0;
 
 	virtual void DeInit()=0;
 
-	virtual void KickOff()=0;
+	virtual void StartConnectingServer()=0;
+
+	virtual void DisconnectServer()=0;
 
 	virtual void SignalPowerButtonPressed(PowerSignalT powerSignal)=0;
 

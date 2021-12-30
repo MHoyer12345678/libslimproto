@@ -59,7 +59,7 @@ bool SlimProtoTest::Init(int argc, char *argv[])
 
 	Logger::LogDebug("SlimProtoTest::Init - Initalizing SlimProtoTest");
 
-	if (!this->squeezeClient->Init())
+	if (!this->squeezeClient->Init(true))
 		return false;
 
     g_unix_signal_add(1, &UnixSignalHandler, this);
@@ -90,7 +90,6 @@ gboolean SlimProtoTest::UnixSignalHandler(gpointer user_data)
 
 void SlimProtoTest::Run()
 {
-    this->squeezeClient->KickOff();
 	Logger::LogDebug("SlimProtoTest::Run -> Going to enter main loop.");
 	g_main_loop_run(this->mainloop);
 	Logger::LogDebug("SlimProtoTest::Run -> Main loop left. Shutting down.");
@@ -208,6 +207,29 @@ const char* SlimProtoTest::GetPlayerAlsaDeviceName()
 const char* SlimProtoTest::GetMixerAlsaDeviceName()
 {
 	return "pulse";
+}
+
+const char* SlimProtoTest::GetServerAddress()
+{
+	return "mediacenter";
+}
+
+const char* SlimProtoTest::GetServerPort()
+{
+	return "3483";
+}
+
+void SlimProtoTest::OnConnectingServerFailed(int &retryTimeoutMS)
+{
+	Logger::LogInfo("Client failed connecting to server. Setting retry TO to 1s.");
+	retryTimeoutMS=100;
+}
+
+void SlimProtoTest::OnServerConnectionLost(int &retryTimeoutMS,
+		SqueezeClient::ConnectLostReasonT reason)
+{
+	Logger::LogInfo("Lost Connecting to server (Reason: %d). Setting retry TO to 1s.", reason);
+	retryTimeoutMS=1000;
 }
 
 const char* SlimProtoTest::GetMixerAlsaMixerName()

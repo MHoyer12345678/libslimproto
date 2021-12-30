@@ -19,7 +19,9 @@ const char* SqueezeClient::CLIENT_STATE_NAMES[]=
 				IPlayer::PLAYER_STATE_NAMES[IPlayer::PlayerStateT::STOPPED],
 				IPlayer::PLAYER_STATE_NAMES[IPlayer::PlayerStateT::PLAYING],
 				IPlayer::PLAYER_STATE_NAMES[IPlayer::PlayerStateT::PAUSED],
-				"POWERED_OFF"
+				"POWERED_OFF",
+				"DISCONNECTED",
+				"CONNECTING"
 		};
 
 SqueezeClientImpl::SqueezeClientImpl(IEventInterface *evIFace, IClientConfiguration *clientConfig,
@@ -41,7 +43,7 @@ SqueezeClientImpl::~SqueezeClientImpl()
 		delete this->volCtrl;
 }
 
-bool SqueezeClientImpl::Init()
+bool SqueezeClientImpl::Init(bool autoConnectToServer)
 {
 	if (!this->player->Init())
 		return false;
@@ -52,6 +54,9 @@ bool SqueezeClientImpl::Init()
 
 	if (!this->controller->Init())
 		return false;
+
+	if (autoConnectToServer)
+		this->controller->StartConnectingServer();
 
 	return true;
 }
@@ -64,9 +69,14 @@ void SqueezeClientImpl::DeInit()
 	this->controller->DeInit();
 }
 
-void SqueezeClientImpl::KickOff()
+void SqueezeClientImpl::StartConnectingServer()
 {
-	this->controller->KickOff();
+	this->controller->StartConnectingServer();
+}
+
+void SqueezeClientImpl::DisconnectServer()
+{
+	this->controller->DisconnectServer();
 }
 
 void SqueezeClientImpl::SignalPowerButtonPressed(PowerSignalT powerSignal)

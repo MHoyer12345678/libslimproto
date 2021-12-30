@@ -516,7 +516,7 @@ void CommandFactory::DoProcessStrmSCmd(StrmSrvCmdT *cmd)
 	if (cmd->serverIp!=0)
 		srvInfo.ip=cmd->serverIp;
 	else
-	srvInfo.ip=this->lmsConnection->GetServerIp();
+		srvInfo.ip=this->lmsConnection->GetServerIp();
 	srvInfo.port=ntohs(cmd->serverPort);
 	srvInfo.httpRequest=cmd->requestString;
 

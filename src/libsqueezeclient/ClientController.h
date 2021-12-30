@@ -5,8 +5,8 @@
  *      Author: joe
  */
 
-#ifndef SRC_PLAYERCONTROLLER_H_
-#define SRC_PLAYERCONTROLLER_H_
+#ifndef SRC_CLIENTCONTROLLER_H_
+#define SRC_CLIENTCONTROLLER_H_
 
 #include "LMSConnection.h"
 #include "SqueezeClient.h"
@@ -39,6 +39,7 @@ private:
 
 	void UpdatePlayerStatusData();
 
+	void SetClientState(SqueezeClient::SqueezeClientStateT newState);
 public:
 	//----------- IPlayerEventListener ---------------------------------------
 	virtual void OnConnectionResponseReceived(const char *responseStr);
@@ -52,7 +53,9 @@ public:
 	//----------- IConnectionListener ---------------------------------------
 	virtual void OnConnectionEstablished();
 
-	virtual void OnConnectionLost(bool isClosedByClient);
+	virtual void OnConnectingServerFailed(int &retryTimeoutMS);
+
+	virtual void OnServerConnectionLost(int &retryTimeoutMS, SqueezeClient::ConnectLostReasonT reason);
 
 	virtual void OnCommandReceived(void *data, uint16_t cmdSize);
 
@@ -94,7 +97,9 @@ public:
 
 	void DeInit();
 
-	void KickOff();
+	void StartConnectingServer();
+
+	void DisconnectServer();
 
 	void SignalPowerButtonPressed(SqueezeClient::PowerSignalT powerSignal);
 
@@ -123,4 +128,4 @@ public:
 
 } /* namespace squeezeclient */
 
-#endif /* SRC_PLAYERCONTROLLER_H_ */
+#endif /* SRC_CLIENTCONTROLLER_H_ */

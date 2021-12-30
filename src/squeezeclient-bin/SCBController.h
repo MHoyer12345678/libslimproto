@@ -79,6 +79,10 @@ public:
 
 	void OnVolumeChanged(unsigned int volL, unsigned int volR);
 
+	void OnConnectingServerFailed(int &retryTimeoutMS);
+
+	void OnServerConnectionLost(int &retryTimeoutMS, SqueezeClient::ConnectLostReasonT reason);
+
 };
 
 } /* namespace squeezeclient */
