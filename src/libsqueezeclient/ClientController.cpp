@@ -25,19 +25,15 @@
 #define IR_CMD_PLAY		0x768910ef
 #define IR_CMD_MUTE		0x7689c43b
 
-
-#warning do per state checks on function calls and implement / check error handling
-#warning: Stopp player when connection lost
-
 using CppAppUtils::Logger;
 using namespace squeezeclient;
 
-ClientController::ClientController(SqueezeClient::IEventInterface *evIFace,
-		SqueezeClient::IClientConfiguration *sclConfig, IPlayer *aPlayer, IVolumeControl *volCtrl) :
+ClientController::ClientController(SqueezeClient::IEventInterface *evIFace,SqueezeClient::IClientConfiguration *sclConfig,
+		IPlayer *aPlayer, IVolumeControl *volCtrl) :
 		player(aPlayer),
 		volCtrl(volCtrl),
 		squeezeClientEventInterface(evIFace),
-		clientState(SqueezeClient::__NOT_SET),
+		clientState(SqueezeClient::SqueezeClient::SRV_DISCONNECTED),
 		squeezeClientConfig(sclConfig)
 {
 	assert(aPlayer!=NULL);
@@ -55,8 +51,6 @@ ClientController::~ClientController()
 
 bool ClientController::Init()
 {
-	this->SetClientState(SqueezeClient::SRV_DISCONNECTED);
-
 	if (!this->lmsConnection->Init(this->squeezeClientConfig))
 		return false;
 
@@ -65,14 +59,8 @@ bool ClientController::Init()
 
 void ClientController::DeInit()
 {
-	if (this->lmsConnection->IsConnected())
-	{
-		this->commandFactory->SendByeCmd();
-		this->lmsConnection->Disconnect();
-	}
-    this->lmsConnection->DeInit();
-
-	this->SetClientState(SqueezeClient::SRV_DISCONNECTED);
+	this->DisconnectServer();
+	this->lmsConnection->DeInit();
 }
 
 void ClientController::StartConnectingServer()
@@ -89,6 +77,7 @@ void ClientController::DisconnectServer()
 		this->clientState==SqueezeClient::SqueezeClientStateT::__NOT_SET) return;
 
     Logger::LogDebug("ClientController::DisconnectServer - Disconnecting from server.");
+	this->commandFactory->SendByeCmd();
     this->lmsConnection->Disconnect();
     this->SetClientState(SqueezeClient::SRV_DISCONNECTED);
 }
@@ -102,14 +91,14 @@ void ClientController::OnConnectionEstablished()
 	this->squeezeClientConfig->GetMACAddress(macAdress);
 	this->squeezeClientConfig->GetUID(uid);
 
-	if (!this->commandFactory->SendHeloCmd(macAdress, uid))
+	if (this->commandFactory->SendHeloCmd(macAdress, uid))
 	{
-#warning Error handling
-		Logger::LogError("Failed to send helo command to server.");
+		//start with state "POWEROFF". Server will tell us if we are powered on
+		this->SetClientState(SqueezeClient::POWERED_OFF);
+		//no addional error handling is needed here. If sending a command fails,
+		//LMSConnection enters the failure state on its own leading to respective
+		//callbacks from ClientController called.
 	}
-
-	//start with state "POWEROFF". Server will tell us if we are powered on
-	this->SetClientState(SqueezeClient::POWERED_OFF);
 }
 
 void ClientController::OnConnectingServerFailed(int &retryTimeoutMS)
@@ -121,6 +110,7 @@ void ClientController::OnConnectingServerFailed(int &retryTimeoutMS)
 void ClientController::OnServerConnectionLost(int &retryTimeoutMS,
 		SqueezeClient::ConnectLostReasonT reason)
 {
+	this->player->Stop();
 	this->SetClientState(SqueezeClient::SRV_DISCONNECTED);
 	this->squeezeClientEventInterface->OnServerConnectionLost(
 			retryTimeoutMS,reason);
@@ -146,19 +136,25 @@ void ClientController::OnConnectionResponseReceived(const char *responseStr)
 
 void ClientController::OnReadyToPlay()
 {
-    Logger::LogDebug("ClientController::OnReadyToPlay - Player informed us about being ready to play.");
-	this->commandFactory->SendSTMlCmd(&this->lmsPlayerStatusData);
+	Logger::LogDebug("ClientController::OnReadyToPlay - Player informed us about being ready to play.");
+	if (this->lmsConnection->IsConnected())
+		this->commandFactory->SendSTMlCmd(&this->lmsPlayerStatusData);
+	//else
+		//ignore event if not connected anymore to server
 }
 
 void ClientController::OnTrackEnded()
 {
     Logger::LogDebug("ClientController::OnReadyToPlay - Player informed us about an ended track.");
-	this->commandFactory->SendSTMdCmd(&this->lmsPlayerStatusData);
+	if (this->lmsConnection->IsConnected())
+		this->commandFactory->SendSTMdCmd(&this->lmsPlayerStatusData);
+	//else
+		//ignore event if not connected anymore to server
 }
 
 void ClientController::SignalPowerButtonPressed(SqueezeClient::PowerSignalT powerSignal)
 {
-    Logger::LogDebug("ClientController::SignalPowerButtonPressed - Power button pressed.");
+	//correct state to send a command ensured in squeezeclientimpl
     switch(powerSignal)
     {
     case SqueezeClient::POWER_OFF:
@@ -174,44 +170,44 @@ void ClientController::SignalPowerButtonPressed(SqueezeClient::PowerSignalT powe
 
 void ClientController::SignalPlayButtonPressed()
 {
-    Logger::LogDebug("ClientController::SignalPlayButtonPressed - Play button pressed.");
+	//correct state to send a command ensured in squeezeclientimpl
     if (this->clientState!=SqueezeClient::SqueezeClientStateT::PLAYING)
     	this->commandFactory->SendIRCmd(IR_CMD_PLAY);
 }
 
 void ClientController::SignalPauseButtonPressed()
 {
-    Logger::LogDebug("ClientController::SignalPauseButtonPressed - Pause button pressed.");
+	//correct state to send a command ensured in squeezeclientimpl
     this->commandFactory->SendIRCmd(IR_CMD_PAUSE);
 }
 
 void ClientController::SignalNextButtonPressed()
 {
-    Logger::LogDebug("ClientController::SignalNextButtonPressed - Next button pressed.");
+	//correct state to send a command ensured in squeezeclientimpl
     this->commandFactory->SendIRCmd(IR_CMD_NEXT);
 }
 
 void ClientController::SignalPreviousButtonPressed()
 {
-    Logger::LogDebug("ClientController::SignalPreviousButtonPressed - Previous button pressed.");
+	//correct state to send a command ensured in squeezeclientimpl
     this->commandFactory->SendIRCmd(IR_CMD_PREV);
 }
 
 void ClientController::SignalVolUpButtonPressed()
 {
-    Logger::LogDebug("ClientController::SignalVolUpButtonPressed - Volup button pressed.");
+	//correct state to send a command ensured in squeezeclientimpl
     this->commandFactory->SendIRCmd(IR_CMD_VOLUP);
 }
 
 void ClientController::SignalVolDownButtonPressed()
 {
-    Logger::LogDebug("ClientController::SignalVolDownButtonPressed - VolDown button pressed.");
+	//correct state to send a command ensured in squeezeclientimpl
     this->commandFactory->SendIRCmd(IR_CMD_VOLDOWN);
 }
 
 void ClientController::SignalMuteButtonPressed()
 {
-    Logger::LogDebug("ClientController::SignalMuteButtonPressed - Mute button pressed.");
+	//correct state to send a command ensured in squeezeclientimpl
     this->commandFactory->SendIRCmd(IR_CMD_MUTE);
 }
 
@@ -363,7 +359,7 @@ void ClientController::OnSrvRequestedLoadStream(
 	if (!player->LoadStream(srvInfo, audioFMT, autostart))
 	{
 		Logger::LogError("Unable to play stream.");
-		//TODO: There is sort of error reporting to server -> Find out what and how
+		#warning: There is sort of error reporting to server -> Find out what and how
 	}
 	this->commandFactory->SendSTMsCmd(&this->lmsPlayerStatusData);
 }
@@ -387,20 +383,20 @@ SqueezeClient::SqueezeClientStateT ClientController::GetClientState()
 	return this->clientState;
 }
 
-#warning following functions away later
-
-void ClientController::SignalFakeFaster()
-{
-	//add 10ms on playtime
-    Logger::LogDebug("ClientController::SignalFakeFaster - Not yet implemented.");
-}
-
 void squeezeclient::ClientController::SetClientState(
 		SqueezeClient::SqueezeClientStateT newState)
 {
 	if (this->clientState==newState) return;
 	this->clientState=newState;
 	this->squeezeClientEventInterface->OnClientStateChanged(newState);
+}
+
+#warning following functions away later
+
+void ClientController::SignalFakeFaster()
+{
+	//add 10ms on playtime
+    Logger::LogDebug("ClientController::SignalFakeFaster - Not yet implemented.");
 }
 
 void ClientController::SignalFakeSlower()

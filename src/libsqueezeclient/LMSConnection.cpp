@@ -75,11 +75,22 @@ void LMSConnection::DeInit()
 	this->sclConfig=NULL;
 }
 
-
 void LMSConnection::StartConnecting()
 {
-	assert(this->state!=__NOT_SET);
+	//start connecting out of mainloop to be a bit more robust regarding initialization
+	//of components and usage of squeezeclient API in combination with callbacks
+	g_idle_add(OnStartConnecting,this);
+}
 
+gboolean LMSConnection::OnStartConnecting(gpointer userData)
+{
+	LMSConnection* instance=(LMSConnection *)userData;
+	instance->DoStartConnecting();
+	return FALSE;
+}
+
+void LMSConnection::DoStartConnecting()
+{
 	if (this->state!=StateT::DISCONNECTED && this->state!=StateT::FAILED_CONNECTING)
 		return;
 
@@ -462,10 +473,11 @@ void LMSConnection::EnterFailedConnecting()
 	Logger::LogDebug("LMSConnection::EnterFailedConnecting - Failed connecting to LMS.");
 	this->state=StateT::FAILED_CONNECTING;
 
+	this->EnterDisconnected();
+
 	if (this->connectionListener!=NULL)
 		this->connectionListener->OnConnectingServerFailed(retryTimeoutMS);
 
-	this->EnterDisconnected();
 	this->KickOffReconnect(retryTimeoutMS);
 }
 
@@ -476,10 +488,11 @@ void LMSConnection::EnterConnectionError(SqueezeClient::ConnectLostReasonT reaso
 	Logger::LogDebug("LMSConnection::EnterConnectionError - Error on existing LMS connecting.");
 	this->state=StateT::CONNECTION_ERROR;
 
+	this->EnterDisconnected();
+
 	if (this->connectionListener!=NULL)
 		this->connectionListener->OnServerConnectionLost(retryTimeoutMS, reason);
 
-	this->EnterDisconnected();
 	this->KickOffReconnect(retryTimeoutMS);
 }
 

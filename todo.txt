@@ -1,13 +1,10 @@
-//refactor
-- pass config elements to init to ensure that they are not used before init is called
-- remark: check if possible verywhere ..
-	
 //Connection concept
-- resolve ip address from name
-- Connection concept
-  * reconnect/autoreconnect
-- Auto server discovery
-- Take care for autostart and different start modi (more than one strms possible??)
+- Determine MAC Address automatically
+
+//Architecture
+- Error handling
+  * Check where connection errors can happen and initiate respective state change
+
 
 //squeezeclientbin
 - "mute ramp off" possible via CAPs ? Does it help further?
@@ -16,10 +13,6 @@
 - elapsed time negative if no pipeline established, should be 0
 
  
-
-//Architecture
-- arch refactor
-  * Error concept and connect error reporting to server
 
 //packageing
 - make a shared lib from currently static one

@@ -29,6 +29,8 @@ private:
 
 	uint8_t builderFlags;
 
+	bool IsConnectedToServer();
+
 public:
 	SqueezeClientImpl(IEventInterface *evIFace, IClientConfiguration *clientConfig,
 			IPlayer *aPlayer, IVolumeControl *volCtrl, uint8_t builderFlags);

@@ -20,7 +20,7 @@ SCBController::SCBController(SCBConfig *config) :
 		dbusConId(0),
 		dbusConnection(NULL)
 {
-	SqueezeClientBuilder sueezeClientBuilder(this,config);
+	SqueezeClientBuilder sueezeClientBuilder(this, config);
 
 	sueezeClientBuilder.PlayerUseGstCustomConf(config);
 	sueezeClientBuilder.VolumeControlUseAlsa(config);

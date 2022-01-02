@@ -15,11 +15,10 @@
 
 using namespace squeezeclient;
 
-SqueezeClientBuilder::SqueezeClientBuilder(
-		SqueezeClient::IEventInterface *eventInterface,
-		SqueezeClient::IClientConfiguration *clientConfig) :
+SqueezeClientBuilder::SqueezeClientBuilder(SqueezeClient::IEventInterface *eventInterface,
+		SqueezeClient::IClientConfiguration *sclConfig) :
 		sclEventInterface(eventInterface),
-		sclConfig(clientConfig),
+		sclConfig(sclConfig),
 		player(NULL),
 		volCtrl(NULL),
 		builderFlags(__BUILDER_FLAG_RESET)
@@ -38,7 +37,7 @@ SqueezeClient* SqueezeClientBuilder::CreateInstance()
 	//volCtrl==NULL -> internal volume control disabled
 	//sclEventInterface==NULL -> no events needed outside
 
-	return new SqueezeClientImpl(this->sclEventInterface, this->sclConfig,
+	return new SqueezeClientImpl(this->sclEventInterface,this->sclConfig,
 			this->player, this->volCtrl, builderFlags);
 }
 

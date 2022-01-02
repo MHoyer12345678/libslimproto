@@ -14,8 +14,6 @@
 
 #include "SqueezeClient.h"
 
-#warning: Implement heart beat in both direction to detect server loss
-
 namespace squeezeclient
 {
 
@@ -72,11 +70,15 @@ private:
 
 	static gboolean	OnReconnectTimeoutElapsed(gpointer userData);
 
+	static gboolean	OnStartConnecting(gpointer userData);
+
 	bool SendDiscoveryMessage();
 
 	void OnDataReceived();
 
 	void OnDiscoveryDataReceived();
+
+	void DoStartConnecting();
 
 	bool ConnectToDiscoveredServer(struct sockaddr_in s);
 

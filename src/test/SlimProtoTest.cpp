@@ -24,7 +24,7 @@ SlimProtoTest::SlimProtoTest() :
 		returnCode(0),
 		keyEvents(NULL)
 {
-	SqueezeClientBuilder sclBuilder(this,this);
+	SqueezeClientBuilder sclBuilder(this, this);
 
 	//select player
 //	sclBuilder.PlayerUseGstDefaultConf();

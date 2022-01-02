@@ -7,11 +7,13 @@
 
 #include "SqueezeClientImpl.h"
 
+#include "cpp-app-utils/Logger.h"
 #include "player/GstPlayer.h"
 
 #include "assert.h"
 
 using namespace squeezeclient;
+using namespace CppAppUtils;
 
 const char* SqueezeClient::CLIENT_STATE_NAMES[]=
 		{
@@ -63,60 +65,94 @@ bool SqueezeClientImpl::Init(bool autoConnectToServer)
 
 void SqueezeClientImpl::DeInit()
 {
+	this->controller->DeInit();
 	if (this->volCtrl!=NULL)
 		this->volCtrl->DeInit();
 	this->player->DeInit();
-	this->controller->DeInit();
 }
 
 void SqueezeClientImpl::StartConnectingServer()
 {
+	assert(this->GetState()!=__NOT_SET);
 	this->controller->StartConnectingServer();
 }
 
 void SqueezeClientImpl::DisconnectServer()
 {
+	assert(this->GetState()!=__NOT_SET);
 	this->controller->DisconnectServer();
 }
 
 void SqueezeClientImpl::SignalPowerButtonPressed(PowerSignalT powerSignal)
 {
-	this->controller->SignalPowerButtonPressed(powerSignal);
+    Logger::LogDebug("SqueezeClientImpl::SignalPowerButtonPressed - Power button pressed.");
+    if (this->IsConnectedToServer())
+    	this->controller->SignalPowerButtonPressed(powerSignal);
+    else
+        Logger::LogError("Squeezeclient not connected to server. Ignoring signal \"PowerButtonPressed\".");
 }
 
 void SqueezeClientImpl::SignalPlayButtonPressed()
 {
-	this->controller->SignalPlayButtonPressed();
+    Logger::LogDebug("SqueezeClientImpl::SignalPlayButtonPressed - Play button pressed.");
+    if (this->IsConnectedToServer())
+    	this->controller->SignalPlayButtonPressed();
+    else
+        Logger::LogError("Squeezeclient not connected to server. Ignoring signal \"PlayButtonPressed\".");
 }
 
 void SqueezeClientImpl::SignalPauseButtonPressed()
 {
-	this->controller->SignalPauseButtonPressed();
+    Logger::LogDebug("SqueezeClientImpl::SignalPauseButtonPressed - Pause button pressed.");
+    if (this->IsConnectedToServer())
+    	this->controller->SignalPauseButtonPressed();
+    else
+        Logger::LogError("Squeezeclient not connected to server. Ignoring signal \"PauseButtonPressed\".");
 }
 
 void SqueezeClientImpl::SignalNextButtonPressed()
 {
-	this->controller->SignalNextButtonPressed();
+    Logger::LogDebug("SqueezeClientImpl::SignalNextButtonPressed - Next button pressed.");
+    if (this->IsConnectedToServer())
+    	this->controller->SignalNextButtonPressed();
+    else
+        Logger::LogError("Squeezeclient not connected to server. Ignoring signal \"NextButtonPressed\".");
 }
 
 void SqueezeClientImpl::SignalPreviousButtonPressed()
 {
-	this->controller->SignalPreviousButtonPressed();
+    Logger::LogDebug("SqueezeClientImpl::SignalPreviousButtonPressed - Previous button pressed.");
+    if (this->IsConnectedToServer())
+    	this->controller->SignalPreviousButtonPressed();
+    else
+        Logger::LogError("Squeezeclient not connected to server. Ignoring signal \"PreviousButtonPressed\".");
 }
 
 void SqueezeClientImpl::SignalVolUpButtonPressed()
 {
-	this->controller->SignalVolUpButtonPressed();
+    Logger::LogDebug("SqueezeClientImpl::SignalVolUpButtonPressed - VolUp button pressed.");
+    if (this->IsConnectedToServer())
+    	this->controller->SignalVolUpButtonPressed();
+    else
+        Logger::LogError("Squeezeclient not connected to server. Ignoring signal \"VolUpButtonPressed\".");
 }
 
 void SqueezeClientImpl::SignalVolDownButtonPressed()
 {
-	this->controller->SignalVolDownButtonPressed();
+    Logger::LogDebug("SqueezeClientImpl::SignalVolDownButtonPressed - VolDown button pressed.");
+    if (this->IsConnectedToServer())
+    	this->controller->SignalVolDownButtonPressed();
+    else
+        Logger::LogError("Squeezeclient not connected to server. Ignoring signal \"VolDownButtonPressed\".");
 }
 
 void SqueezeClientImpl::SignalMuteButtonPressed()
 {
-	this->controller->SignalMuteButtonPressed();
+    Logger::LogDebug("SqueezeClientImpl::SignalMuteButtonPressed - Mute button pressed.");
+    if (this->IsConnectedToServer())
+    	this->controller->SignalMuteButtonPressed();
+    else
+        Logger::LogError("Squeezeclient not connected to server. Ignoring signal \"MuteButtonPressed\".");
 }
 
 void SqueezeClientImpl::SignalFakeFaster()
@@ -129,8 +165,13 @@ void SqueezeClientImpl::SignalFakeSlower()
 	this->controller->SignalFakeSlower();
 }
 
+bool SqueezeClientImpl::IsConnectedToServer()
+{
+	SqueezeClientStateT clientState=this->controller->GetClientState();
+	return clientState!=__NOT_SET && clientState!=SRV_DISCONNECTED && clientState!=SRV_CONNECTING;
+}
+
 SqueezeClient::SqueezeClientStateT SqueezeClientImpl::GetState()
 {
 	return this->controller->GetClientState();
 }
-

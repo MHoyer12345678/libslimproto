@@ -24,15 +24,15 @@ private:
 
 	SqueezeClient::IEventInterface *sclEventInterface;
 
-	SqueezeClient::IClientConfiguration *sclConfig;
-
 	IPlayer *player;
 
 	IVolumeControl *volCtrl;
 
+	SqueezeClient::IClientConfiguration *sclConfig;
+
 public:
 	SqueezeClientBuilder(SqueezeClient::IEventInterface *eventInterface,
-			SqueezeClient::IClientConfiguration *clientConfig);
+			SqueezeClient::IClientConfiguration *sclConfig);
 
 	virtual ~SqueezeClientBuilder();
 

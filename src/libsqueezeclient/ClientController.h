@@ -89,7 +89,8 @@ public:
 
 public:
 	ClientController(SqueezeClient::IEventInterface *evIFace,
-			SqueezeClient::IClientConfiguration *squeezeClientConfig, IPlayer *player, IVolumeControl *volCtrl);
+			SqueezeClient::IClientConfiguration *squeezeClientConfig,
+			IPlayer *player, IVolumeControl *volCtrl);
 
 	~ClientController();
 
