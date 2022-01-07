@@ -171,10 +171,11 @@ void SlimProtoTest::GetUID(char uid[16])
 	Logger::LogInfo("Client requested uid from us.");
 }
 
-void SlimProtoTest::GetMACAddress(uint8_t mac[6])
+void SlimProtoTest::GetMACAddress(uint8_t mac[6], bool &autodetectMac)
 {
 	uint8_t MAC_ADDRESS[6]={0x5C,0xE0, 0xC5, 0x49, 0x54, 0xAD};
 	memcpy(mac, MAC_ADDRESS,6);
+	autodetectMac=false;
 	Logger::LogInfo("Client requested mac address from us.");
 }
 

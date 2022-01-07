@@ -62,6 +62,8 @@ private:
 
 	in_addr_t serverIp;
 
+	uint8_t macAddress[6];
+
 	IConnectionListener *connectionListener;
 
 	static gboolean	OnDataReceived(gint fd,GIOCondition condition, gpointer userData);
@@ -85,6 +87,10 @@ private:
 	bool ConnectToConfiguredServer();
 
 	bool FinalizeConnection(int aSocket, in_addr_t serverAddress);
+
+	void DetermineLocalMACAddress();
+
+	void DetermineLocalMACAddress(const char *ifName);
 
 	void CloseConnection(SocketConnection *conPtr);
 
@@ -124,6 +130,8 @@ public:
 	bool IsConnected();
 
 	in_addr_t GetServerIp();
+
+	void GetMACAddress(uint8_t macAddress[6]);
 };
 
 } /* namespace squeezeclient */

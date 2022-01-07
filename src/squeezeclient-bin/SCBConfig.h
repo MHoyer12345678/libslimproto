@@ -39,6 +39,14 @@ private:
 
 	char *serverPort;
 
+	bool autodetectMac;
+
+	uint8_t macAddress[6];
+
+	bool ParseMacAddress(GKeyFile *confFile, const char *group, const char *key);
+
+	bool ParseStringElement(GKeyFile *confFile, const char *group, const char *key, char **elementAttributePtr);
+
 public:
 	static const char *Version;
 
@@ -73,7 +81,7 @@ public:
 	//--------------------------------------- SqueezeClient::IClientConfiguration ---------------
 	void GetUID(char uid[16]);
 
-	void GetMACAddress(uint8_t  mac[6]);
+	void GetMACAddress(uint8_t  mac[6], bool &autodetectMac);
 
 	bool IsInternalVolumeCtrlEnabled();
 

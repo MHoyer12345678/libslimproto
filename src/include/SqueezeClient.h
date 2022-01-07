@@ -38,7 +38,7 @@ public:
 
 		virtual void GetUID(char uid[16])=0;
 
-		virtual void GetMACAddress(uint8_t  mac[6])=0;
+		virtual void GetMACAddress(uint8_t  mac[6], bool &autodetectMac)=0;
 
 		virtual const char* GetServerAddress()=0;
 

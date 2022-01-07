@@ -57,7 +57,7 @@ public:
 
 	void GetUID(char uid[16]);
 
-	void GetMACAddress(uint8_t mac[6]);
+	void GetMACAddress(uint8_t mac[6], bool &autodetectMac);
 
 	bool IsInternalVolumeCtrlEnabled();
 

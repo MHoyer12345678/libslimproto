@@ -8,6 +8,7 @@
 #include "LMSConnection.h"
 
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
@@ -17,7 +18,10 @@
 #include <assert.h>
 #include <netdb.h>
 #include <errno.h>
-
+#include <ifaddrs.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <netinet/in.h>
 #include <cpp-app-utils/Logger.h>
 
 #include "CommandFactory.h"
@@ -51,7 +55,7 @@ LMSConnection::LMSConnection(IConnectionListener *listener) :
 	this->discoveryConnection.gEventId=0;
 	this->lmsConnection.socket=-1;
 	this->lmsConnection.gEventId=0;
-
+	memset(this->macAddress,0, 6);
 }
 
 LMSConnection::~LMSConnection()
@@ -63,6 +67,7 @@ bool LMSConnection::Init(SqueezeClient::IClientConfiguration *sclConfig)
 	Logger::LogDebug("LMSConnection::Init - Initalizing LMSConnection.");
 	this->state=StateT::DISCONNECTED;
 	this->sclConfig=sclConfig;
+	memset(this->macAddress,0, 6);
 	return true;
 }
 
@@ -126,9 +131,100 @@ bool LMSConnection::IsConnected()
 	return this->state==StateT::CONNECTED;
 }
 
+void LMSConnection::DetermineLocalMACAddress()
+{
+	struct sockaddr_in in_addr;
+	struct ifaddrs* ifAddr;
+	socklen_t len=sizeof(in_addr);
+
+	if (this->lmsConnection.socket==-1)
+		return;
+
+	if (getsockname(this->lmsConnection.socket, (sockaddr *)&in_addr,&len)==-1)
+	{
+		Logger::LogError("Unable to get local ip address from connection socket: %s", strerror(errno));
+		return;
+	}
+
+	Logger::LogDebug("LMSConnection::DetermineLocalMACAddress - Local address of connection: %s", inet_ntoa(in_addr.sin_addr));
+
+	getifaddrs(&ifAddr);
+
+	for (struct ifaddrs *ifa = ifAddr; ifa != NULL; ifa = ifa->ifa_next)
+	{
+	    if (ifa->ifa_addr)
+	    {
+	        if (AF_INET == ifa->ifa_addr->sa_family)
+	        {
+	            struct sockaddr_in* inaddr = (struct sockaddr_in*)ifa->ifa_addr;
+
+	            if (inaddr->sin_addr.s_addr == in_addr.sin_addr.s_addr)
+	            {
+	                if (ifa->ifa_name)
+	                {
+	            		Logger::LogDebug("LMSConnection::DetermineLocalMACAddress - Found ethernet interface used for our connection: %s", ifa->ifa_name);
+	            		this->DetermineLocalMACAddress(ifa->ifa_name);
+	                }
+	            }
+	        }
+	    }
+	}
+	freeifaddrs(ifAddr);
+}
+
+void LMSConnection::DetermineLocalMACAddress(const char *ifName)
+{
+    struct ifreq* it;
+    const struct ifreq* end;
+	struct ifreq ifr;
+    struct ifconf ifc;
+    char buf[1024];
+    int success = 0;
+
+    ifc.ifc_len = sizeof(buf);
+    ifc.ifc_buf = buf;
+    if (ioctl(this->lmsConnection.socket, SIOCGIFCONF, &ifc) == -1)
+    {
+		Logger::LogError("Unable call ioctl SIOCGIFCONF");
+    	return;
+    }
+
+    it = ifc.ifc_req;
+    end = it + (ifc.ifc_len / sizeof(struct ifreq));
+
+	for (; it != end; ++it)
+	{
+		strcpy(ifr.ifr_name, it->ifr_name);
+		if (ioctl(this->lmsConnection.socket, SIOCGIFFLAGS, &ifr) == 0) {
+			if (! (ifr.ifr_flags & IFF_LOOPBACK)) { // don't count loopback
+				if (ioctl(this->lmsConnection.socket, SIOCGIFHWADDR, &ifr) == 0) {
+					success = 1;
+					break;
+				}
+			}
+		}
+		else
+		{
+			Logger::LogError("Unable call ioctl SIOCGIFFLAGS");
+			return;
+		}
+	}
+
+	memcpy(this->macAddress, ifr.ifr_hwaddr.sa_data, 6);
+
+	Logger::LogDebug("LMSConnection::DetermineLocalMACAddress - Got MAC address: %X:%X:%X:%X:%X:%X",
+			this->macAddress[0], this->macAddress[1], this->macAddress[2],
+			this->macAddress[3],this->macAddress[4],this->macAddress[5]);
+}
+
 in_addr_t LMSConnection::GetServerIp()
 {
 	return this->serverIp;
+}
+
+void LMSConnection::GetMACAddress(uint8_t macAddress[6])
+{
+	memcpy(macAddress, this->macAddress, 6);
 }
 
 bool LMSConnection::SendCmd(void *data, int size)
@@ -328,6 +424,8 @@ bool LMSConnection::FinalizeConnection(int aSocket, in_addr_t serverAddress)
 	this->lmsConnection.socket=aSocket;
 	this->lmsConnection.gEventId=gEventId;
 	this->serverIp=serverAddress;
+
+	this->DetermineLocalMACAddress();
 
 	Logger::LogDebug("LMSConnect::Connect - Connected to LMS. IP: %d.%d.%d.%d", this->serverIp & 0xFF,
 			(this->serverIp >> 8) & 0xFF, (this->serverIp >> 16) & 0xFF, (this->serverIp >> 24));

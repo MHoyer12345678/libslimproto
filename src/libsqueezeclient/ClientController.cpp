@@ -86,9 +86,21 @@ void ClientController::OnConnectionEstablished()
 {
 	uint8_t macAdress[6];
 	char uid[16];
+	bool autodetectMac;
 
 	Logger::LogDebug("ClientController::OnConnectionEstablished - Got informed about connection to server established.");
-	this->squeezeClientConfig->GetMACAddress(macAdress);
+	this->squeezeClientConfig->GetMACAddress(macAdress, autodetectMac);
+	if (autodetectMac)
+	{
+		this->lmsConnection->GetMACAddress(macAdress);
+		Logger::LogDebug("ClientController::OnConnectionEstablished - Using MAC from eth interface: %X:%X:%X:%X:%X:%X",
+				macAdress[0],macAdress[1],macAdress[2],macAdress[3],macAdress[4],macAdress[5]);
+	}
+	else
+		Logger::LogDebug("ClientController::OnConnectionEstablished - Using confgured MAC: %X:%X:%X:%X:%X:%X",
+				macAdress[0],macAdress[1],macAdress[2],macAdress[3],macAdress[4],macAdress[5]);
+
+
 	this->squeezeClientConfig->GetUID(uid);
 
 	if (this->commandFactory->SendHeloCmd(macAdress, uid))
@@ -359,6 +371,7 @@ void ClientController::OnSrvRequestedLoadStream(
 	if (!player->LoadStream(srvInfo, audioFMT, autostart))
 	{
 		Logger::LogError("Unable to play stream.");
+		this->commandFactory->SendSTMnCmd(&this->lmsPlayerStatusData);
 		#warning: There is sort of error reporting to server -> Find out what and how
 	}
 	this->commandFactory->SendSTMsCmd(&this->lmsPlayerStatusData);
