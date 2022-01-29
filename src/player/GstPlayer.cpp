@@ -139,6 +139,8 @@ void GstPlayer::UpdatePlayerStatus(PlayerStatusT *status)
 	assert(this->pipelineElements.pipeline!=NULL);
 	//returns play time in nano secs
 	runningTime=gst_element_get_current_running_time(this->pipelineElements.audioAutoSink);
+	if (runningTime==GST_CLOCK_TIME_NONE)
+		runningTime=0;
 	status->elapsedMilliseconds=runningTime/1000000;
 	Logger::LogDebug("GstPlayer::UpdatePlayerStatus - ElapsedMillisoncs: %d", status->elapsedMilliseconds);
 

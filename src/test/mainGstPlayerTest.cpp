@@ -15,7 +15,6 @@ int main (int argc, char **argv)
 {
 	int result;
 
-	//TODO: Change sort of
 	Logger::SetLogLevel(Logger::DEBUG);
 
 	GstPlayerTest* playerTestInstance=GstPlayerTest::Instance();

@@ -49,6 +49,7 @@ typedef struct HeloCliCmdT
 	uint32_t dataBytesReceivedH;
 	uint32_t dataBytesReceivedL;
 	char countryCode[2];
+	char caps[0];
 } HeloCliCmdT;
 
 typedef struct ByeCliCmdT
@@ -179,23 +180,35 @@ bool CommandFactory::SendMessage(void *data, ssize_t dataSize)
 
 bool CommandFactory::SendHeloCmd(uint8_t macAdress[6], char uid[16])
 {
-	//TODO: Thing about wlanChannelList -> readout ??
-	//TODO: What's about dataBytesReceived?
-	//TODO: Thing about Countrycode -> readout ??
+	HeloCliCmdT *cmd;
+	size_t size, capsLen;
 
+	#warning connect caps with configuration file
+	char *caps="wma,aac,ogg,flc,aif,pcm,mp3,";
 
-	HeloCliCmdT cmd;
-	this->SetCmdBase(&cmd.cmdBase,"HELO", sizeof(HeloCliCmdT));
-	cmd.deviceId=DEVICE_ID_SQUEEZE_PLAYER;
-	cmd.revision=DEVICE_REVISION;
-	memcpy(cmd.macAdress, macAdress, sizeof(cmd.macAdress));
-	memcpy(cmd.UID, uid, sizeof(cmd.UID));
-	cmd.wlanChannelList=0x1FFF;
-	cmd.dataBytesReceivedH=0;
-	cmd.dataBytesReceivedL=0;
-	memcpy(cmd.countryCode, COUNTRY_CODE, sizeof(cmd.countryCode));
+	capsLen=strlen(caps)+1;
+	size=sizeof(HeloCliCmdT)+capsLen;
+	cmd=(HeloCliCmdT *)alloca(size);
+	Logger::LogError("Size: %ld",size);
 
-	return this->SendMessage(&cmd, sizeof(cmd));
+	this->SetCmdBase(&cmd->cmdBase,"HELO", size);
+	cmd->deviceId=DEVICE_ID_SQUEEZE_PLAYER;
+	cmd->revision=DEVICE_REVISION;
+	memcpy(cmd->macAdress, macAdress, sizeof(cmd->macAdress));
+	memcpy(cmd->UID, uid, sizeof(cmd->UID));
+	//no real use of wlan channel list currently, some hidden bits
+	//are used to "extend" the interface. No real use such extensions currently.
+	//So lets just send this constant
+	cmd->wlanChannelList=0x1FFF;
+	//start with 0 here
+	cmd->dataBytesReceivedH=0;
+	cmd->dataBytesReceivedL=0;
+	//No use of country code in lms currently -> Just send "DE"
+	memcpy(cmd->countryCode, COUNTRY_CODE, sizeof(cmd->countryCode));
+
+	memcpy(cmd->caps, caps, capsLen);
+
+	return this->SendMessage(cmd, size);
 }
 
 bool CommandFactory::SendStatCmd(const char *event,

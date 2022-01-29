@@ -1,39 +1,31 @@
+//Issues
+
+
 //Architecture
 - Error handling
   * Check where connection errors can happen and initiate respective state change
-
-
-//squeezeclientbin
-- "mute ramp off" possible via CAPs ? Does it help further?
-
-//Issues
-- elapsed time negative if no pipeline established, should be 0
-
- 
-
-//packageing
-- make a shared lib from currently static one
-- create debianization
 
 //Extended testing
 - fully test sync play use case (next / stop / pause / ...)
 - test other formats
 
-//Configuration
-- configuration or parametrization
-  * configure ip & port
+//squeezeclientbin
+- "mute ramp off" possible via CAPs ? Does it help further?
+
+//packageing
+- make a shared lib from currently static one
+- create debianization
+- check if header files are packaged correctly ...
 
 //compile configure option to exclude gst player
   * add configure option
   * ifdef out as pre configure option
 
-//check if header files are packaged correctly ...
 
 //generic open topics
 - fill attributes of STAT with meaningful values
 - helo command
   * capabilities
-  * data_bytes_received: What is squeezelite doing with it? Anything useful with this?
 - WLAN channels
   * read out from linux and transfer
   * or configure
