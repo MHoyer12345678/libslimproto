@@ -4,7 +4,7 @@
  *  Created on: 01.12.2021
  *      Author: joe
  */
-#include "IGstPlayerConfig.h"
+#include "squeezeclient/IGstPlayerConfig.h"
 
 using namespace squeezeclient;
 

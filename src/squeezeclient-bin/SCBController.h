@@ -8,7 +8,7 @@
 #ifndef SRC_SQUEEZECLIENT_BIN_SCBCONTROLLER_H_
 #define SRC_SQUEEZECLIENT_BIN_SCBCONTROLLER_H_
 
-#include "SqueezeClient.h"
+#include "squeezeclient/SqueezeClient.h"
 #include "SCBConfig.h"
 #include "SCBController.h"
 #include "generated/SqueezeClientInteface.h"
@@ -60,11 +60,11 @@ private:
 			guchar arg_state, gpointer pUserData);
 
 public:
-	SCBController(SCBConfig *config);
+	SCBController();
 
 	virtual ~SCBController();
 
-	bool Init();
+	bool Init(SCBConfig *config);
 
 	void DeInit();
 

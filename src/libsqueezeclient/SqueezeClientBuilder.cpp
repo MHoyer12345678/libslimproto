@@ -6,7 +6,7 @@
  */
 #include <assert.h>
 
-#include "SqueezeClientBuilder.h"
+#include "squeezeclient/SqueezeClientBuilder.h"
 
 #include "SqueezeClientImpl.h"
 

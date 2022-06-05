@@ -1,0 +1,11 @@
+[Unit]
+Description="Squeeze Client"
+
+[Service]
+User=joe
+ExecStart=/usr/bin/squeezeclient
+Type=dbus
+BusName=Squeeze.Client
+
+[Install]
+WantedBy=multi-user.target

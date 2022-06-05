@@ -20,7 +20,7 @@ SqueezeClientBin::SqueezeClientBin() :
 		returnCode(0)
 {
 	this->config=new SCBConfig();
-	this->controller=new SCBController(this->config);
+	this->controller=new SCBController();
 
 	this->mainloop=g_main_loop_new(NULL,FALSE);
 }
@@ -59,7 +59,7 @@ bool SqueezeClientBin::Init(int argc, char *argv[])
     g_unix_signal_add(2, &UnixSignalHandler, this);
     g_unix_signal_add(15, &UnixSignalHandler, this);
 
-    if (!this->controller->Init())
+    if (!this->controller->Init(this->config))
     	return false;
 
     this->controller->KickOff();

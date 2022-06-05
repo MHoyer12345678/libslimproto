@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <arpa/inet.h>
 
-#include "SqueezeClient.h"
+#include "squeezeclient/SqueezeClient.h"
 
 namespace squeezeclient
 {

@@ -9,10 +9,10 @@
 #define SRC_CLIENTCONTROLLER_H_
 
 #include "LMSConnection.h"
-#include "SqueezeClient.h"
+#include "squeezeclient/SqueezeClient.h"
 #include "CommandFactory.h"
-#include "IPlayer.h"
-#include "IVolumeControl.h"
+#include "squeezeclient/IPlayer.h"
+#include "squeezeclient/IVolumeControl.h"
 
 
 namespace squeezeclient {

@@ -11,7 +11,7 @@
 #include <glib.h>
 
 #include "GstPlayer.h"
-#include "IGstPlayerConfig.h"
+#include "squeezeclient/IGstPlayerConfig.h"
 
 namespace squeezeclient {
 

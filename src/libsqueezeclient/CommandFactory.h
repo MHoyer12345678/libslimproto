@@ -11,7 +11,7 @@
 #include "stdint.h"
 
 #include "LMSConnection.h"
-#include "IPlayer.h"
+#include "squeezeclient/IPlayer.h"
 
 typedef struct CliCmdBaseT CliCmdBaseT;
 typedef struct StrmSrvCmdT StrmSrvCmdT;

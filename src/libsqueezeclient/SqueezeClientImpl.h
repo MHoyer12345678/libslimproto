@@ -9,9 +9,9 @@
 #define SRC_SQUEEZECLIENT_SQUEEZECLIENTIMPL_H_
 
 #include "ClientController.h"
-#include "SqueezeClient.h"
+#include "squeezeclient/SqueezeClient.h"
 
-#include "IVolumeControl.h"
+#include "squeezeclient/IVolumeControl.h"
 
 namespace squeezeclient {
 

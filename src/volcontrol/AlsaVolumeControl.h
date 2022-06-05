@@ -11,8 +11,8 @@
 #include <alsa/asoundlib.h>
 #include <glib.h>
 
-#include "IVolumeControl.h"
-#include "IAlsaVolumeControlConfig.h"
+#include "squeezeclient/IVolumeControl.h"
+#include "squeezeclient/IAlsaVolumeControlConfig.h"
 
 namespace squeezeclient {
 

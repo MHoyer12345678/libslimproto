@@ -11,8 +11,8 @@
 #include <gst/gst.h>
 #include <stdint.h>
 
-#include "IPlayer.h"
-#include "IGstPlayerConfig.h"
+#include "squeezeclient/IPlayer.h"
+#include "squeezeclient/IGstPlayerConfig.h"
 
 namespace squeezeclient {
 

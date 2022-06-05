@@ -8,9 +8,9 @@
 #ifndef SRC_SQUEEZECLIENT_BIN_SCBCONFIG_H_
 #define SRC_SQUEEZECLIENT_BIN_SCBCONFIG_H_
 
-#include "IGstPlayerConfig.h"
-#include "IAlsaVolumeControlConfig.h"
-#include "SqueezeClient.h"
+#include "squeezeclient/IGstPlayerConfig.h"
+#include "squeezeclient/IAlsaVolumeControlConfig.h"
+#include "squeezeclient/SqueezeClient.h"
 
 #include "cpp-app-utils/Configuration.h"
 

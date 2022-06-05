@@ -7,7 +7,7 @@
 
 #include "SCBController.h"
 
-#include "SqueezeClientBuilder.h"
+#include "squeezeclient/SqueezeClientBuilder.h"
 #include "cpp-app-utils/Logger.h"
 
 #define SCB_BUSNAME			"Squeeze.Client"
@@ -16,28 +16,31 @@
 using namespace CppAppUtils;
 using namespace squeezeclient;
 
-SCBController::SCBController(SCBConfig *config) :
+SCBController::SCBController() :
 		dbusConId(0),
-		dbusConnection(NULL)
+		dbusConnection(NULL),
+		squeezeClient(NULL)
 {
-	SqueezeClientBuilder sueezeClientBuilder(this, config);
-
-	sueezeClientBuilder.PlayerUseGstCustomConf(config);
-	sueezeClientBuilder.VolumeControlUseAlsa(config);
-	this->squeezeClient=sueezeClientBuilder.CreateInstance();
-
 	this->dbusInterface=squeeze_client_control_skeleton_new();
 }
 
 SCBController::~SCBController()
 {
-	SqueezeClientBuilder::DestroyInstance(this->squeezeClient);
 	g_object_unref(this->dbusInterface);
 }
 
 
-bool SCBController::Init()
+bool SCBController::Init(SCBConfig *config)
 {
+	SqueezeClientBuilder sueezeClientBuilder(this, config);
+
+	sueezeClientBuilder.PlayerUseGstCustomConf(config);
+	if (config->IsInternalVolumeCtrlEnabled())
+		sueezeClientBuilder.VolumeControlUseAlsa(config);
+	else
+		Logger::LogDebug("SCBController::SCBController - No internal volume control used.");
+	this->squeezeClient=sueezeClientBuilder.CreateInstance();
+
 	if (!this->squeezeClient->Init(false))
 		return false;
 
@@ -51,7 +54,12 @@ bool SCBController::Init()
 
 void SCBController::DeInit()
 {
-	this->squeezeClient->DeInit();
+	if (this->squeezeClient!=NULL)
+	{
+		this->squeezeClient->DeInit();
+		SqueezeClientBuilder::DestroyInstance(this->squeezeClient);
+		this->squeezeClient=NULL;
+	}
 }
 
 void SCBController::KickOff()

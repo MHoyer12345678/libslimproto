@@ -10,10 +10,10 @@
 
 #include <glib.h>
 
-#include "SqueezeClient.h"
+#include "squeezeclient/SqueezeClient.h"
 
-#include "IGstPlayerConfig.h"
-#include "IAlsaVolumeControlConfig.h"
+#include "squeezeclient/IGstPlayerConfig.h"
+#include "squeezeclient/IAlsaVolumeControlConfig.h"
 
 namespace squeezeclient {
 

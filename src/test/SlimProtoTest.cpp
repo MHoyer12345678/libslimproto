@@ -7,7 +7,7 @@
 
 #include "SlimProtoTest.h"
 
-#include "SqueezeClientBuilder.h"
+#include "squeezeclient/SqueezeClientBuilder.h"
 
 #include <cpp-app-utils/Logger.h>
 #include <glib-unix.h>

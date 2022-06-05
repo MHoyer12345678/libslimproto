@@ -1,10 +1,14 @@
 ACLOCAL_AMFLAGS=-I m4
 
-bin_PROGRAMS=test-libsqueezeclient test-gstplayer squeezeclient
+SUBDIRS=include
 
-noinst_LIBRARIES = libsqueezeclient.a
+bin_PROGRAMS=squeezeclient
 
-libsqueezeclient_a_SOURCES = \
+noinst_PROGRAMS=test-libsqueezeclient test-gstplayer
+
+lib_LTLIBRARIES=libsqueezeclient.la
+
+libsqueezeclient_la_SOURCES = \
 	libsqueezeclient/Utils.cpp					\
 	libsqueezeclient/Utils.h					\
 	libsqueezeclient/ClientController.cpp		\
@@ -29,8 +33,7 @@ libsqueezeclient_a_SOURCES = \
 	include/IVolumeControl.h					\
 	include/GstPlayerConfig.h				
 	
-
-libsqueezeclient_a_CPPFLAGS  = \
+libsqueezeclient_la_CPPFLAGS  = \
 		-fPIC					\
 		-Ilib					\
 		-Iinclude				\
@@ -43,6 +46,20 @@ libsqueezeclient_a_CPPFLAGS  = \
 	   	$(LIBSOUP_CFLAGS)		\
 		$(GSTREAMER_CFLAGS)		\
 		$(ALSA_CFLAGS)
+
+libsqueezeclient_la_LIBADD	  =	\
+		-lCppAppUtils			\
+		$(GIO_LIBS_LIBS)		\
+		$(GIO_UNIX_LIBS)		\
+		$(GLIB_LIBS)			\
+		$(GSTREAMER_LIBS)		\
+		$(GOBJECT_LIBS)			\
+		$(LIBSOUP_LIBS)			\
+		$(ALSA_LIBS)
+
+libsqueezeclient_la_LDFLAGS = -version-info 1:0:0 -shared -fPIC
+		
+pkgconfig_DATA = libsqueezeclient/libsqueezeclient.pc
 		
 squeezeclient_SOURCES = \
 	squeezeclient-bin/mainSqueezeClientBin.cpp							\
@@ -61,20 +78,16 @@ squeezeclient_CPPFLAGS = \
 		$(GIO_UNIX_CFLAGS)		\
 	   	$(GLIB_CFLAG)			\
 		$(GSTREAMER_CFLAGS)		\
-	   	$(GOBJECT_CFLAGS)		\
-	   	$(LIBSOUP_CFLAGS)		\
-		$(ALSA_CFLAGS)
+	   	$(GOBJECT_CFLAGS)		
 
 squeezeclient_LDADD	  = \
-		libsqueezeclient.a		\
+		libsqueezeclient.la	\
 		-lCppAppUtils			\
 		$(GIO_LIBS_LIBS)		\
 		$(GIO_UNIX_LIBS)		\
 		$(GLIB_LIBS)			\
 		$(GSTREAMER_LIBS)		\
-		$(GOBJECT_LIBS)			\
-		$(LIBSOUP_LIBS)			\
-		$(ALSA_LIBS)
+		$(GOBJECT_LIBS)
 
 # List generated headers here to assert that they are available when built is started
 BUILT_SOURCES =  squeezeclient-bin/generated/SqueezeClientInteface.h
@@ -87,32 +100,39 @@ CLEANFILES    =  squeezeclient-bin/generated/SqueezeClientInteface.c  \
 squeezeclient-bin/generated/SqueezeClientInteface.c squeezeclient-bin/generated/SqueezeClientInteface.h: squeezeclient-bin/dbus/squeezeclient-bin.xml
 	gdbus-codegen --interface-prefix=SqueezeClientBinDBus. --generate-c-code=squeezeclient-bin/generated/SqueezeClientInteface squeezeclient-bin/dbus/squeezeclient-bin.xml
 
+squeezeclientconfdir=$(sysconfdir)/squeezeclient
+squeezeclientconf_DATA = squeezeclient-bin/conf/squeezeclient.conf
+
+DISTCHECK_CONFIGURE_FLAGS = \
+  --with-systemdsystemunitdir=$$dc_install_base/$(systemdsystemunitdir)
+  
+if HAVE_SYSTEMD
+systemdsystemunit_DATA = \
+  		squeezeclient-bin/conf/squeezeclient.service
+endif
+
 test_libsqueezeclient_SOURCES =		\
 	test/mainSlimProtoTest.cpp	\
 	test/SlimProtoTest.cpp		\
 	test/SlimProtoTest.h
-		
+
 test_libsqueezeclient_CPPFLAGS = \
 		-Iinclude				\
 		$(GIO_LIBS_CFLAGS)		\
 		$(GIO_UNIX_CFLAGS)		\
 	   	$(GLIB_CFLAG)			\
 		$(GSTREAMER_CFLAGS)		\
-	   	$(GOBJECT_CFLAGS)		\
-	   	$(LIBSOUP_CFLAGS)		\
-	   	$(ALSA_CFLAGS)
+	   	$(GOBJECT_CFLAGS)
 	   	
 
 test_libsqueezeclient_LDADD	  = \
-		libsqueezeclient.a		\
+		libsqueezeclient.la		\
 		-lCppAppUtils			\
 		$(GIO_LIBS_LIBS)		\
 		$(GIO_UNIX_LIBS)		\
 		$(GLIB_LIBS)			\
 		$(GSTREAMER_LIBS)		\
-		$(GOBJECT_LIBS)			\
-		$(LIBSOUP_LIBS)			\
-		$(ALSA_LIBS)
+		$(GOBJECT_LIBS)
 		
 test_gstplayer_SOURCES =		\
 	test/mainGstPlayerTest.cpp	\
@@ -126,15 +146,13 @@ test_gstplayer_CPPFLAGS = \
 		$(GIO_UNIX_CFLAGS)		\
 		$(GLIB_CFLAG)			\
 		$(GSTREAMER_CFLAGS)		\
-		$(GOBJECT_CFLAGS)		\
-	   	$(LIBSOUP_CFLAGS)
+		$(GOBJECT_CFLAGS)
 
 test_gstplayer_LDADD	  = \
-		libsqueezeclient.a		\
+		libsqueezeclient.la		\
 		-lCppAppUtils			\
 		$(GIO_LIBS_LIBS)		\
 		$(GIO_UNIX_LIBS)		\
 		$(GLIB_LIBS)			\
 		$(GOBJECT_LIBS)			\
-		$(GSTREAMER_LIBS)		\
-		$(LIBSOUP_LIBS)
+		$(GSTREAMER_LIBS)

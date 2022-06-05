@@ -5,7 +5,7 @@
  *      Author: joe
  */
 
-#include "IPlayer.h"
+#include "squeezeclient/IPlayer.h"
 
 #include <stdlib.h>
 

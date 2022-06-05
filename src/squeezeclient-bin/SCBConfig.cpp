@@ -103,6 +103,7 @@ bool SCBConfig::ParseConfigFileItem(GKeyFile *confFile,
 		{
 			if (!Configuration::GetBooleanValueFromKey(confFile,key,group, &this->internalVolCtrlEnabled))
 				result=false;
+			Logger::LogDebug("SCBConfig::ParseConfigFileItem - interal vol crtl: %d", this->internalVolCtrlEnabled);
 		}
 		else if (strcasecmp(key, CONFIG_TAG_SERVER_ADDRESS)==0)
 		{

@@ -1,0 +1,35 @@
+Source: squeezeclient
+Priority: optional
+Section: embedded
+Maintainer: Marko Hoyer <joe@unknown>
+Build-Depends: debhelper-compat (= 12), libglib2.0-dev, cpp-app-utils-dev, libgstreamer1.0-dev, libsoup2.4-dev, libasound2-dev
+Standards-Version: 4.1.2
+Homepage: <insert the upstream URL, if relevant>
+#Vcs-Browser: https://salsa.debian.org/debian/squeezeclient
+#Vcs-Git: https://salsa.debian.org/debian/squeezeclient.git
+#Rules-Requires-Root: no
+
+Package: squeezeclient-bin
+Section: embedded
+Multi-Arch: same
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: squeezeclient
+ Standalone client for logitech media center (squeezeclient).
+
+Package: libsqueezeclient1
+Section: libs
+Multi-Arch: same
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: squeeze client library
+ Shared library implementing basic functionality used to implement a logitech media center client (squeezeclient).
+
+Package: libsqueezeclient-dev
+Section: libdevel
+Multi-Arch: same
+Architecture: any
+Depends: ${misc:Depends} libsqueezeclient1
+Description: squeeze client library header files
+ Header files to use libsqueezeclient.
+ 
