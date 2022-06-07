@@ -189,7 +189,6 @@ bool CommandFactory::SendHeloCmd(uint8_t macAdress[6], char uid[16])
 	capsLen=strlen(caps)+1;
 	size=sizeof(HeloCliCmdT)+capsLen;
 	cmd=(HeloCliCmdT *)alloca(size);
-	Logger::LogError("Size: %ld",size);
 
 	this->SetCmdBase(&cmd->cmdBase,"HELO", size);
 	cmd->deviceId=DEVICE_ID_SQUEEZE_PLAYER;
