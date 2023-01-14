@@ -1,5 +1,10 @@
 //Issues
 - add gstreamer-plugin-good and gstreamer-plugin-alsa as dependency
+- install SqueezeClient.conf to /etc/dbus-1/system.d
+- volume is not set in dbus property after restart, check state as well 
+
+//player name configurable??
+- currently, player name is not part of config, does this make sense?
 
 //refactor squeezeclient-bin
 - connect InternalVolumeControlEnabled

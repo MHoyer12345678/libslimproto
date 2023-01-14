@@ -15,7 +15,7 @@
 
 namespace squeezeclient {
 
-class GstPlayerTest {
+class GstPlayerTest : public IGstPlayerConfig {
 private:
 	static GstPlayerTest* instance;
 
@@ -44,6 +44,9 @@ public:
 
 	int GetReturnCode();
 
+	virtual const char *GetGstAudioSinkElementType();
+
+	virtual void DoConfigureSinkElement(GstElement *sinkElement);
 };
 
 } /* namespace squeezeclient */

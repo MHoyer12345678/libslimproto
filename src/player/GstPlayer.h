@@ -29,7 +29,9 @@ private:
 
 		GstElement *audioConvert;
 
-		GstElement *audioAutoSink;
+		GstElement *audioReSample;
+
+		GstElement *audioSink;
 
 	} PipeLineElementsT;
 

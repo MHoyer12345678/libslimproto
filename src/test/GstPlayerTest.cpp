@@ -20,7 +20,7 @@ GstPlayerTest::GstPlayerTest() :
 		returnCode(0)
 {
 	this->mainloop=g_main_loop_new(NULL,FALSE);
-	this->player=new GstPlayer(GstPlayerDefaultConfig::Instance());
+	this->player=new GstPlayer(this);
 }
 
 GstPlayerTest::~GstPlayerTest()
@@ -72,9 +72,9 @@ gboolean GstPlayerTest::UnixSignalHandler(gpointer user_data)
 
 void GstPlayerTest::Run()
 {
-    this->player->PlayStream("https://icecast.ndr.de/ndr/njoy/live/mp3/128/stream.mp3","",true);
+    //this->player->PlayStream("https://icecast.ndr.de/ndr/njoy/live/mp3/128/stream.mp3","",true);
+    this->player->PlayStream("http://192.168.178.29:9000/stream.mp3?player=b8:27:eb:b9:a7:63","",true);
     //this->player->PlayStream("http://mediacenter/test.mp3","",true);
-//    this->player->PlayStream("http://mediacenter:9000/","GET /stream.mp3?player=5c:e0:c5:49:54:ad HTTP/1.0");
 	Logger::LogDebug("GstPlayerTest::Run -> Going to enter main loop.");
 	g_timeout_add(4000, OnTimeoutElapsed, this);
 	g_main_loop_run(this->mainloop);
@@ -93,3 +93,13 @@ int GstPlayerTest::GetReturnCode()
 	return this->returnCode;
 }
 
+const char* squeezeclient::GstPlayerTest::GetGstAudioSinkElementType()
+{
+	return "alsasink";
+}
+
+void squeezeclient::GstPlayerTest::DoConfigureSinkElement(
+		GstElement *sinkElement)
+{
+	g_object_set (G_OBJECT (sinkElement), "device", "default", NULL);
+}

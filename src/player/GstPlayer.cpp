@@ -62,13 +62,14 @@ bool GstPlayer::Init()
 	this->pipelineElements.soupHttpSource=this->CreateElement("souphttpsrc", "http_source");
 	this->pipelineElements.decodeBin=this->CreateElement("decodebin", "decode_bin");
 	this->pipelineElements.audioConvert=this->CreateElement("audioconvert", "audio_convert");
-	this->pipelineElements.audioAutoSink=this->CreateElement(
+	this->pipelineElements.audioReSample=this->CreateElement("audioresample", "audio_resample");
+	this->pipelineElements.audioSink=this->CreateElement(
 			this->configuration->GetGstAudioSinkElementType(), "audio_sink");
 
-	this->configuration->DoConfigureSinkElement(this->pipelineElements.audioAutoSink);
+	this->configuration->DoConfigureSinkElement(this->pipelineElements.audioSink);
 
 	if (this->pipelineElements.soupHttpSource==NULL || this->pipelineElements.decodeBin==NULL ||
-			this->pipelineElements.audioConvert==NULL || this->pipelineElements.audioAutoSink==NULL)
+			this->pipelineElements.audioConvert==NULL || this->pipelineElements.audioSink==NULL)
 		return false;
 
 	bus = gst_pipeline_get_bus (GST_PIPELINE (this->pipelineElements.pipeline));
@@ -77,7 +78,8 @@ bool GstPlayer::Init()
 
 	Logger::LogDebug("GstPlayer::Init - Linking elements in pipeline.");
 	gst_bin_add_many (GST_BIN (this->pipelineElements.pipeline), this->pipelineElements.soupHttpSource,
-			this->pipelineElements.decodeBin, this->pipelineElements.audioConvert, this->pipelineElements.audioAutoSink, NULL);
+			this->pipelineElements.decodeBin, this->pipelineElements.audioConvert,
+			this->pipelineElements.audioReSample,this->pipelineElements.audioSink, NULL);
 
 	if (!this->LinkElements(this->pipelineElements.soupHttpSource, this->pipelineElements.decodeBin, "souphttpsrc with decodebin."))
 		return false;
@@ -85,7 +87,10 @@ bool GstPlayer::Init()
 	//need to link decodebin and audioconvert dynamically
 	g_signal_connect (this->pipelineElements.decodeBin, "pad-added", G_CALLBACK (GstPlayer::OnPadAdded), this);
 
-	if (!this->LinkElements(this->pipelineElements.audioConvert, this->pipelineElements.audioAutoSink, "audioconvert with autoaudiosink."))
+	if (!this->LinkElements(this->pipelineElements.audioConvert, this->pipelineElements.audioReSample, "audioconvert with audioresample."))
+		return false;
+
+	if (!this->LinkElements(this->pipelineElements.audioReSample, this->pipelineElements.audioSink, "audioresample with audiosink."))
 		return false;
 
 	this->SetStateAndNotify(PlayerStateT::STOPPED);
@@ -138,7 +143,7 @@ void GstPlayer::UpdatePlayerStatus(PlayerStatusT *status)
 
 	assert(this->pipelineElements.pipeline!=NULL);
 	//returns play time in nano secs
-	runningTime=gst_element_get_current_running_time(this->pipelineElements.audioAutoSink);
+	runningTime=gst_element_get_current_running_time(this->pipelineElements.audioSink);
 	if (runningTime==GST_CLOCK_TIME_NONE)
 		runningTime=0;
 	status->elapsedMilliseconds=runningTime/1000000;
