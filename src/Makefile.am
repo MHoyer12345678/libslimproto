@@ -103,6 +103,9 @@ squeezeclient-bin/generated/SqueezeClientInteface.c squeezeclient-bin/generated/
 squeezeclientconfdir=$(sysconfdir)/squeezeclient
 squeezeclientconf_DATA = squeezeclient-bin/conf/squeezeclient.conf
 
+squeezeclientdbusdir=$(sysconfdir)/dbus-1/system.d
+squeezeclientdbus_DATA = squeezeclient-bin/dbus/SqueezeClient.conf
+
 DISTCHECK_CONFIGURE_FLAGS = \
   --with-systemdsystemunitdir=$$dc_install_base/$(systemdsystemunitdir)
   
